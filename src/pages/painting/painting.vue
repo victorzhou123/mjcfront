@@ -19,7 +19,7 @@
               </view>
             </view>
             <view class="frame9">
-              <view class="ellipse1" />
+              <image src="/static/user_avatar.png" class="ellipse1" mode="aspectFill" />
             </view>
           </view>
           
@@ -69,7 +69,7 @@
         <image src="/static/mey13hjj-7bnxieb.svg" class="brush-line1" />
         <text class="text4">AI绘图</text>
       </view>
-      <view class="frame2" @tap="navigateToProfile">
+      <view class="frame2">
         <image src="/static/mey13hjj-5nroqr6.svg" class="user-line1" />
         <text class="text5">我的空间</text>
       </view>
@@ -177,11 +177,7 @@ const navigateToAI = () => {
   // 当前页面，不需要跳转
 }
 
-const navigateToProfile = () => {
-  uni.navigateTo({
-    url: '/pages/profile/profile'
-  })
-}
+
 
 // 合并并排序所有消息
 const allMessages = computed(() => {
@@ -278,18 +274,18 @@ onMounted(() => {
 
 .ellipse1 {
   border-radius: 50%;
-  background: #d9d9d9;
   width: 55px;
   height: 55px;
+  object-fit: cover;
 }
 
 .frame11 {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px 8px 21px 27px;
+  padding: 8px 4vw 8px 4vw;
   width: 100%;
-  min-width: 375px;
+  min-width: 320px;
 }
 
 .frame10 {
@@ -297,7 +293,6 @@ onMounted(() => {
   flex-direction: column;
   align-items: flex-end;
   flex: 1;
-  margin-right: 10px;
 }
 
 .timestamp {
@@ -335,16 +330,16 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 0 10px 10px;
+  padding: 0 0 10px 10px;
 }
 
 .frame92 {
   display: flex;
   align-items: flex-start;
-  padding-right: 16px;
-  padding-left: 8px;
-  width: 375px;
-  height: 364px;
+  padding: 8px 4vw 8px 4vw;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 200px;
 }
 
 .frame7 {
@@ -353,7 +348,7 @@ onMounted(() => {
   align-items: flex-start;
   justify-content: center;
   column-gap: 10px;
-  padding: 0px 10px 10px;
+  padding: 0px 10px 10px 0px;
 }
 
 .frame8 {
@@ -361,6 +356,7 @@ onMounted(() => {
   flex-direction: column;
   flex-shrink: 0;
   align-items: flex-start;
+  margin-left: 10px;
 }
 
 .ai-timestamp {
@@ -403,7 +399,7 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 20px 18px 10px 10px;
+  padding: 20px 4vw 10px 2vw;
   width: 100%;
 }
 
@@ -427,9 +423,9 @@ onMounted(() => {
   align-items: center;
   border-radius: 999px;
   background: #dddddd;
-  padding: 6px 26px;
+  padding: 6px 6vw;
   flex: 1;
-  max-width: 299px;
+  max-width: 80vw;
 }
 
 .text3 {
@@ -458,7 +454,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 51px;
+  width: 13vw;
+  max-width: 60px;
+  min-width: 40px;
 }
 
 .frame18 {
@@ -467,8 +465,9 @@ onMounted(() => {
   justify-content: center;
   border-radius: 9px;
   background: rgba(255, 130, 12, 0.4);
-  padding: 8px 12px;
-  min-width: 60px;
+  padding: 8px 3vw;
+  min-width: 15vw;
+  max-width: 80px;
   height: 33px;
   white-space: nowrap;
 }
@@ -476,9 +475,10 @@ onMounted(() => {
 .frame3 {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 100px;
   background: rgba(255, 255, 255, 0.5);
-  padding: 5px 32px;
+  padding: 5px 2vw;
   width: 100%;
   height: 67px;
   position: fixed;
@@ -494,23 +494,24 @@ onMounted(() => {
   justify-content: center;
   border-radius: 999px;
   background: rgba(255, 130, 12, 0.2);
-  padding: 5px;
+  padding: 8px 16px;
   height: 49px;
   gap: 1px;
+  min-width: 80px;
 }
 
 .brush-line1 {
-  width: 24px;
-  height: 23px;
+  width: 30px;
+  height: 28px;
 }
 
 .text4 {
   text-align: center;
-  line-height: 22px;
+  line-height: 18px;
   letter-spacing: 0;
   color: #ff820c;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .frame2 {
@@ -518,22 +519,27 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
   height: 49px;
   gap: 1px;
+  min-width: 80px;
 }
 
 .user-line1 {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 28px;
 }
 
 .text5 {
   text-align: center;
-  line-height: 22px;
+  line-height: 18px;
   letter-spacing: 0;
-  color: #000000;
+  color: #666666;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
 }
+
+
 </style>
