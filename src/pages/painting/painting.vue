@@ -1,17 +1,15 @@
 <template>
   <view class="painting">
     <!-- 顶部标题栏 -->
-    <view class="frame4">
-      <text class="text">AI绘画</text>
-    </view>
+    <TopHeader title="AI绘画" />
     
     <!-- 主要内容区域 -->
     <view class="auto-wrapper">
-      <scroll-view class="frame554" scroll-y="true">
+      <scroll-view ref="scrollViewRef" class="frame554" scroll-y="true" :scroll-top="scrollTop" :scroll-into-view="scrollIntoView">
         <!-- 统一渲染所有消息，按时间戳排序 -->
         <template v-for="(message, index) in allMessages" :key="message.type + '-' + index">
           <!-- 用户消息 -->
-          <view v-if="message.type === 'user'" class="frame11">
+          <view v-if="message.type === 'user'" class="frame11" :id="'message-' + index">
             <view class="frame10">
               <text class="timestamp">{{ message.timestamp }}</text>
               <view class="rectangle2">
@@ -24,7 +22,7 @@
           </view>
           
           <!-- AI回复消息 -->
-          <view v-else-if="message.type === 'ai'" class="frame92">
+          <view v-else-if="message.type === 'ai'" class="frame92" :id="'message-' + index">
             <view class="frame7">
               <image src="/static/mj_avatar.png" class="ellipse1" mode="aspectFill" />
             </view>
@@ -32,61 +30,45 @@
               <text class="ai-timestamp">{{ message.timestamp }}</text>
               <view class="rectangle1">
                 <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" />
-                <text v-else class="loading-text">正在生成图片...</text>
+                <view v-else class="loading-container">
+                  <text class="loading-text">正在生成图片...</text>
+                </view>
               </view>
             </view>
           </view>
         </template>
-
+        <!-- 底部锚点元素 -->
+        <view id="bottom-anchor" style="height: 1px;"></view>
       </scroll-view>
       
-      <!-- 底部输入区域 -->
-      <view class="frame20">
-        <view class="frame21" @tap="focusInput">
-          <input 
-            ref="inputRef"
-            class="text3" 
-            v-model="inputText" 
-            placeholder="在此输入提示词"
-            :disabled="isGenerating"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @tap.stop="focusInput"
-            :focus="inputFocused"
-          />
-        </view>
-        <view class="frame19">
-          <view class="frame18" @tap="handleGenerate">
-            <text class="text">{{ isGenerating ? '生成中...' : '绘制' }}</text>
-          </view>
-        </view>
-      </view>
     </view>
     
+    <!-- 底部输入区域 -->
+    <InputArea 
+      ref="inputAreaRef"
+      :is-generating="isGenerating" 
+      @generate="handleGenerate"
+    />
+    
     <!-- 底部导航栏 -->
-    <view class="frame3">
-      <view class="frame1" @tap="navigateToAI">
-        <image src="/static/mey13hjj-7bnxieb.svg" class="brush-line1" />
-        <text class="text4">AI绘图</text>
-      </view>
-      <view class="frame2">
-        <image src="/static/mey13hjj-5nroqr6.svg" class="user-line1" />
-        <text class="text5">我的空间</text>
-      </view>
-    </view>
+    <BottomNavigation current-page="painting" />
   </view>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, computed } from 'vue'
+import { ref, reactive, onMounted, nextTick, computed, watch } from 'vue'
+import BottomNavigation from '@/components/BottomNavigation.vue'
+import TopHeader from '@/components/TopHeader.vue'
+import InputArea from '@/components/InputArea.vue'
 
 // 响应式数据
-const inputText = ref('')
 const isGenerating = ref(false)
 const userMessages = ref([])
 const aiReplies = ref([])
-const inputFocused = ref(false)
-const inputRef = ref(null)
+const scrollViewRef = ref(null)
+const scrollTop = ref(0)
+const scrollIntoView = ref('')
+const inputAreaRef = ref(null)
 
 // 格式化时间戳
 const formatTimestamp = (addSeconds = 0) => {
@@ -102,18 +84,22 @@ const formatTimestamp = (addSeconds = 0) => {
 }
 
 // 处理生成按钮点击
-const handleGenerate = async () => {
-  if (!inputText.value.trim() || isGenerating.value) {
+const handleGenerate = async (inputText) => {
+  if (!inputText.trim() || isGenerating.value) {
     return
   }
   
   const userMessage = {
-    content: inputText.value,
+    content: inputText,
     timestamp: formatTimestamp()
   }
   
   // 添加用户消息
   userMessages.value.push(userMessage)
+  
+  // 等待DOM更新后滚动
+  await nextTick()
+  await scrollToBottom()
   
   // 创建AI回复占位，时间戳比用户消息晚1秒
   const aiReply = {
@@ -122,9 +108,12 @@ const handleGenerate = async () => {
   }
   aiReplies.value.push(aiReply)
   
-  // 清空输入框
-  const prompt = inputText.value
-  inputText.value = ''
+  // 再次滚动到底部显示AI占位消息
+  await nextTick()
+  await scrollToBottom()
+  
+  // 保存输入文本用于API调用
+  const prompt = inputText
   isGenerating.value = true
   
   try {
@@ -136,6 +125,18 @@ const handleGenerate = async () => {
     const lastReply = aiReplies.value[aiReplies.value.length - 1]
     // 使用静态资源路径
     lastReply.imageUrl = '/static/WechatIMG100.jpeg' // 临时使用用户指定的图片
+    
+    // 图片加载完成后滚动到底部
+    await nextTick()
+    setTimeout(async () => {
+      await scrollToBottom()
+    }, 200) // 等待图片渲染
+    
+    // AI回复完成后聚焦输入框
+    await nextTick()
+    if (inputAreaRef.value && inputAreaRef.value.focusInput) {
+      inputAreaRef.value.focusInput()
+    }
     
   } catch (error) {
     console.error('生成图片失败:', error)
@@ -157,25 +158,30 @@ const simulateAPICall = (prompt) => {
   })
 }
 
-// 输入框焦点处理
-const focusInput = () => {
-  if (!isGenerating.value) {
-    inputFocused.value = true
-  }
+
+// 滚动到底部
+const scrollToBottom = async () => {
+  console.log('scrollToBottom called')
+  await nextTick()
+  
+  // 使用scroll-into-view直接滚动到底部锚点
+  scrollIntoView.value = 'bottom-anchor'
+  
+  // 清除scroll-into-view值，避免影响后续滚动
+  setTimeout(() => {
+    scrollIntoView.value = ''
+  }, 300)
 }
 
-const handleInputFocus = () => {
-  inputFocused.value = true
-}
-
-const handleInputBlur = () => {
-  inputFocused.value = false
-}
-
-// 导航功能
-const navigateToAI = () => {
-  // 当前页面，不需要跳转
-}
+// 监听消息变化，自动滚动到底部
+watch([userMessages, aiReplies], async () => {
+  console.log('Messages changed, userMessages:', userMessages.value.length, 'aiReplies:', aiReplies.value.length)
+  // 等待DOM更新后再滚动
+  await nextTick()
+  setTimeout(() => {
+    scrollToBottom()
+  }, 100)
+}, { deep: true, flush: 'post' })
 
 
 
@@ -184,24 +190,32 @@ const allMessages = computed(() => {
   const messages = []
   
   // 添加用户消息
-  userMessages.value.forEach(msg => {
-    messages.push({
-      type: 'user',
-      content: msg.content,
-      timestamp: msg.timestamp,
-      timestampValue: new Date(msg.timestamp).getTime()
+  if (Array.isArray(userMessages.value) && userMessages.value.length > 0) {
+    userMessages.value.forEach(msg => {
+      if (msg && msg.content && msg.timestamp) {
+        messages.push({
+          type: 'user',
+          content: msg.content,
+          timestamp: msg.timestamp,
+          timestampValue: new Date(msg.timestamp).getTime()
+        })
+      }
     })
-  })
+  }
   
   // 添加AI回复
-  aiReplies.value.forEach(reply => {
-    messages.push({
-      type: 'ai',
-      imageUrl: reply.imageUrl,
-      timestamp: reply.timestamp,
-      timestampValue: new Date(reply.timestamp).getTime()
+  if (Array.isArray(aiReplies.value) && aiReplies.value.length > 0) {
+    aiReplies.value.forEach(reply => {
+      if (reply && reply.timestamp) {
+        messages.push({
+          type: 'ai',
+          imageUrl: reply.imageUrl,
+          timestamp: reply.timestamp,
+          timestampValue: new Date(reply.timestamp).getTime()
+        })
+      }
     })
-  })
+  }
   
   // 按时间戳升序排序
   return messages.sort((a, b) => a.timestampValue - b.timestampValue)
@@ -239,24 +253,10 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.frame4 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.5);
-  padding: 10px;
-  width: 100%;
-  height: 44px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
 .auto-wrapper {
   position: absolute;
   top: 44px;
-  bottom: 121px;
+  bottom: 109px;
   left: 0;
   right: 0;
   width: 100%;
@@ -267,7 +267,7 @@ onMounted(() => {
 .frame554 {
   flex: 1;
   width: 100%;
-  padding: 0 8px;
+  padding: 0 8px 20px 8px;
   height: 100%;
   overflow-y: auto;
 }
@@ -339,7 +339,9 @@ onMounted(() => {
   padding: 8px 4vw 8px 4vw;
   width: 100%;
   max-width: 100vw;
-  min-height: 200px;
+  min-height: auto;
+  position: relative;
+  z-index: 1000;
 }
 
 .frame7 {
@@ -374,7 +376,8 @@ onMounted(() => {
   background: #d9d9d9;
   width: fit-content;
   max-width: calc(100vw - 120px);
-  min-height: 200px;
+  min-width: 200px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -390,9 +393,18 @@ onMounted(() => {
   object-fit: contain;
 }
 
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60px;
+}
+
 .loading-text {
   color: #666;
   font-size: 14px;
+  text-align: center;
 }
 
 .frame93 {
@@ -403,143 +415,9 @@ onMounted(() => {
   width: 100%;
 }
 
-.frame20 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 10px;
-  width: 100%;
-  height: 54px;
-  background: #f4f0eb;
-  position: fixed;
-  bottom: 67px;
-  left: 0;
-  z-index: 999;
-}
 
-.frame21 {
-  display: flex;
-  align-items: center;
-  border-radius: 999px;
-  background: #dddddd;
-  padding: 6px 6vw;
-  flex: 1;
-  max-width: 80vw;
-}
 
-.text3 {
-  flex: 1;
-  line-height: 22px;
-  letter-spacing: 0;
-  color: rgba(0, 0, 0, 0.3);
-  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 14px;
-  border: none;
-  background: transparent;
-  outline: none;
-  min-height: 22px;
-  width: 100%;
-}
 
-.text3:focus {
-  color: #000000;
-}
-
-.frame21:active {
-  background: #cccccc;
-}
-
-.frame19 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 13vw;
-  max-width: 60px;
-  min-width: 40px;
-}
-
-.frame18 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  background: rgba(255, 130, 12, 0.4);
-  padding: 8px 3vw;
-  min-width: 15vw;
-  max-width: 80px;
-  height: 33px;
-  white-space: nowrap;
-}
-
-.frame3 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 100px;
-  background: rgba(255, 255, 255, 0.5);
-  padding: 5px 2vw;
-  width: 100%;
-  height: 67px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-.frame1 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgba(255, 130, 12, 0.2);
-  padding: 8px 16px;
-  height: 49px;
-  gap: 1px;
-  min-width: 80px;
-}
-
-.brush-line1 {
-  width: 30px;
-  height: 28px;
-}
-
-.text4 {
-  text-align: center;
-  line-height: 18px;
-  letter-spacing: 0;
-  color: #ff820c;
-  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 12px;
-}
-
-.frame2 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  height: 49px;
-  gap: 1px;
-  min-width: 80px;
-}
-
-.user-line1 {
-  width: 30px;
-  height: 28px;
-}
-
-.text5 {
-  text-align: center;
-  line-height: 18px;
-  letter-spacing: 0;
-  color: #666666;
-  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 12px;
-}
 
 
 </style>
