@@ -1,7 +1,7 @@
 <template>
   <view class="space">
     <!-- 顶部标题栏 -->
-    <TopHeader title="我的空间" />
+    <TopHeader title="我的空间" :showSettings="true" />
     
     <!-- 主要内容区域 -->
     <view class="auto-wrapper">
@@ -73,6 +73,30 @@ const mockImages = [
   {
     url: '/static/sample5.jpg',
     date: '2024-01-10'
+  },
+  {
+    url: '/static/sample6.jpg',
+    date: '2024-01-09'
+  },
+  {
+    url: '/static/sample7.jpg',
+    date: '2024-01-08'
+  },
+  {
+    url: '/static/sample8.jpg',
+    date: '2024-01-07'
+  },
+  {
+    url: '/static/sample9.jpg',
+    date: '2024-01-06'
+  },
+  {
+    url: '/static/sample10.jpg',
+    date: '2024-01-05'
+  },
+  {
+    url: '/static/sample11.jpg',
+    date: '2024-01-04'
   }
 ]
 
@@ -126,7 +150,7 @@ const handleImageError = (index) => {
 
 .auto-wrapper {
   position: absolute;
-  top: 44px;
+  top: 64px;
   bottom: 67px;
   left: 0;
   right: 0;

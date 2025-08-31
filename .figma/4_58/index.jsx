@@ -8,7 +8,7 @@ const Component = () => {
       <div className={styles.frame4}>
         <p className={styles.text}>我的空间</p>
         <img
-          src="../image/meygqhgj-al6w7o0.svg"
+          src="../image/mez93c6p-029912b.svg"
           className={styles.settings4Line1}
         />
       </div>
@@ -16,27 +16,13 @@ const Component = () => {
         <div className={styles.frame14}>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-bmx70fh.png"
+              src="../image/mez93c6o-3gih4z4.png"
               className={styles.rectangle3}
             />
           </div>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-j8tmi7b.png"
-              className={styles.rectangle3}
-            />
-          </div>
-        </div>
-        <div className={styles.frame14}>
-          <div className={styles.frame12}>
-            <img
-              src="../image/meygqhgj-cuq279h.png"
-              className={styles.rectangle3}
-            />
-          </div>
-          <div className={styles.frame12}>
-            <img
-              src="../image/meygqhgj-hzvn161.png"
+              src="../image/mez93c6o-ytlre5c.png"
               className={styles.rectangle3}
             />
           </div>
@@ -44,13 +30,27 @@ const Component = () => {
         <div className={styles.frame14}>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-epk630d.png"
+              src="../image/mez93c6o-so2qlsj.png"
               className={styles.rectangle3}
             />
           </div>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-est2muk.png"
+              src="../image/mez93c6o-1xpd6u4.png"
+              className={styles.rectangle3}
+            />
+          </div>
+        </div>
+        <div className={styles.frame14}>
+          <div className={styles.frame12}>
+            <img
+              src="../image/mez93c6o-3cobm03.png"
+              className={styles.rectangle3}
+            />
+          </div>
+          <div className={styles.frame12}>
+            <img
+              src="../image/mez93c6o-tcb4cta.png"
               className={styles.rectangle3}
             />
           </div>
@@ -58,13 +58,13 @@ const Component = () => {
         <div className={styles.frame17}>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-bmx70fh.png"
+              src="../image/mez93c6o-3gih4z4.png"
               className={styles.rectangle3}
             />
           </div>
           <div className={styles.frame12}>
             <img
-              src="../image/meygqhgj-j8tmi7b.png"
+              src="../image/mez93c6o-ytlre5c.png"
               className={styles.rectangle3}
             />
           </div>
@@ -72,11 +72,11 @@ const Component = () => {
       </div>
       <div className={styles.frame3}>
         <div className={styles.frame2}>
-          <img src="../image/meygqhgj-vs8a5on.svg" className={styles.brushLine1} />
+          <img src="../image/mez93c6p-i4ydpqx.svg" className={styles.brushLine1} />
           <p className={styles.text2}>AI绘图</p>
         </div>
         <div className={styles.frame1}>
-          <img src="../image/meygqhgj-ov57mcc.svg" className={styles.userLine1} />
+          <img src="../image/mez93c6p-whekx4q.svg" className={styles.userLine1} />
           <p className={styles.text3}>我的空间</p>
         </div>
       </div>
