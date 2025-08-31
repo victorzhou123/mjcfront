@@ -58,11 +58,12 @@ const navigateToSpace = () => {
   justify-content: center;
   gap: 100px;
   background: rgba(255, 255, 255, 0.5);
-  padding: 5px 2vw;
+  /* padding: 5px 2vw; */
+  /* padding-bottom: env(safe-area-inset-bottom); */
   width: 100%;
-  height: 67px !important;
-  min-height: 67px !important;
-  max-height: 67px !important;
+  height: 97px !important;
+  /* min-height: 67px !important;
+  max-height: 67px !important; */
   position: fixed;
   bottom: 0;
   left: 0;

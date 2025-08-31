@@ -146,12 +146,10 @@ const handleImageError = (index) => {
   position: relative;
 }
 
-
-
 .auto-wrapper {
   position: absolute;
-  top: 64px;
-  bottom: 67px;
+  top: calc(44px + env(safe-area-inset-top));
+  bottom: calc(97px + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   width: 100%;

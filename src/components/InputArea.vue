@@ -42,11 +42,21 @@ const inputRef = ref(null)
 
 // 输入框焦点处理
 const focusInput = () => {
-  if (!props.isGenerating && inputRef.value) {
+  if (!props.isGenerating) {
     inputFocused.value = true
     // 使用nextTick确保DOM更新后再聚焦
     nextTick(() => {
-      inputRef.value.focus()
+      try {
+        // 检查 inputRef 是否存在且有 focus 方法
+        if (inputRef.value && typeof inputRef.value.focus === 'function') {
+          inputRef.value.focus()
+        } else {
+          // 在 uni-app 环境中，可能需要使用不同的方式
+          console.log('Input focus method not available, using alternative approach')
+        }
+      } catch (error) {
+        console.warn('Failed to focus input:', error)
+      }
     })
   }
 }
@@ -85,13 +95,14 @@ defineExpose({
   justify-content: center;
   gap: 2vw;
   padding: 1.5vw 2vw;
+  padding-bottom: calc(1.5vw + env(safe-area-inset-bottom));
   width: 100%;
   height: 10vh;
   min-height: 42px;
   max-height: 60px;
   background: #f4f0eb;
   position: fixed;
-  bottom: 67px;
+  bottom: calc(67px + env(safe-area-inset-bottom));
   left: 0;
   z-index: 999;
 }

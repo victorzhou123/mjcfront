@@ -20,12 +20,11 @@ const props = defineProps({
   }
 })
 
-// 定义emits
-const emit = defineEmits(['settings-click'])
-
 // 设置按钮点击事件
 const handleSettingsClick = () => {
-  emit('settings-click')
+  uni.navigateTo({
+    url: '/pages/setting/setting'
+  })
 }
 </script>
 
@@ -41,6 +40,7 @@ const handleSettingsClick = () => {
   position: fixed;
   top: 0;
   left: 0;
+  padding-top: env(safe-area-inset-top);
   z-index: 1000;
 }
 

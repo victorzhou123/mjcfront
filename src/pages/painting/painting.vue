@@ -39,8 +39,7 @@
         </template>
         <!-- 底部锚点元素 -->
         <view id="bottom-anchor" style="height: 1px;"></view>
-      </scroll-view>
-      
+      </scroll-view>     
     </view>
     
     <!-- 底部输入区域 -->
@@ -255,8 +254,8 @@ onMounted(() => {
 
 .auto-wrapper {
   position: absolute;
-  top: 44px;
-  bottom: 109px;
+  top: calc(44px + env(safe-area-inset-top));
+  bottom: calc(109px + 10vh + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   width: 100%;
