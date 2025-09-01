@@ -36,7 +36,7 @@
     </view>
     
     <!-- 底部导航栏 -->
-    <BottomNavigation current-page="space" />
+    <BottomNavigation class="bottom" current-page="space" />
   </view>
 </template>
 
@@ -148,11 +148,10 @@ const handleImageError = (index) => {
 
 .auto-wrapper {
   position: absolute;
-  top: calc(44px + env(safe-area-inset-top));
-  bottom: calc(97px + env(safe-area-inset-bottom));
-  left: 0;
-  right: 0;
+  top: 10%;
+  bottom: 12%;
   width: 100%;
+  /* padding: 0 20vw; */
   display: flex;
   flex-direction: column;
 }
@@ -160,7 +159,7 @@ const handleImageError = (index) => {
 .frame554 {
   flex: 1;
   width: 100%;
-  padding: 4vw;
+  padding: 0 20vw;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;

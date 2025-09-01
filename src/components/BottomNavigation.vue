@@ -1,12 +1,16 @@
 <template>
   <view class="frame3">
-    <view class="frame1" :class="{ active: currentPage === 'painting' }" @tap="navigateToAI">
-      <image src="/static/mey13hjj-7bnxieb.svg" class="brush-line1" />
-      <text class="text4" :class="{ active: currentPage === 'painting' }">AI绘图</text>
+    <view class="frame4">
+      <view class="frame1" :class="{ active: currentPage === 'painting' }" @tap="navigateToAI">
+        <image src="/static/mey13hjj-7bnxieb.svg" class="brush-line1" />
+        <text class="text4" :class="{ active: currentPage === 'painting' }">AI绘图</text>
+      </view>
+      <view class="frame2" :class="{ active: currentPage === 'space' }" @tap="navigateToSpace">
+        <image src="/static/mey13hjj-5nroqr6.svg" class="user-line1" />
+        <text class="text5" :class="{ active: currentPage === 'space' }">我的空间</text>
+      </view>
     </view>
-    <view class="frame2" :class="{ active: currentPage === 'space' }" @tap="navigateToSpace">
-      <image src="/static/mey13hjj-5nroqr6.svg" class="user-line1" />
-      <text class="text5" :class="{ active: currentPage === 'space' }">我的空间</text>
+    <view class="frame5">
     </view>
   </view>
 </template>
@@ -54,16 +58,12 @@ const navigateToSpace = () => {
 <style scoped>
 .frame3 {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 100px;
   background: rgba(255, 255, 255, 0.5);
-  /* padding: 5px 2vw; */
-  /* padding-bottom: env(safe-area-inset-bottom); */
+  height: 12%;
   width: 100%;
-  height: 97px !important;
-  /* min-height: 67px !important;
-  max-height: 67px !important; */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -78,14 +78,26 @@ const navigateToSpace = () => {
   justify-content: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  height: 49px !important;
-  min-height: 49px !important;
-  max-height: 49px !important;
   box-sizing: border-box;
   gap: 2px;
   min-width: 80px;
+  max-height: 80%;
   cursor: pointer;
+}
+
+.frame5 {
+  height: env(safe-area-inset-bottom);
+  width: 100%;
+}
+
+.frame4 {
+  display: flex;
+  flex-direction: row;
+  height: calc(100% - env(safe-area-inset-bottom));
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 15%;
 }
 
 .frame1.active {
@@ -122,10 +134,6 @@ const navigateToSpace = () => {
   justify-content: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  height: 49px !important;
-  min-height: 49px !important;
-  max-height: 49px !important;
   box-sizing: border-box;
   gap: 1px;
   min-width: 80px;

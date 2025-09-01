@@ -1,8 +1,11 @@
 <template>
   <view class="frame4">
-    <text class="text">{{ title }}</text>
-    <view v-if="showSettings" class="settings-btn" @click="handleSettingsClick">
-      <image src="/static/settings-gear.svg" class="settings-icon" />
+    <view class="frame5"></view>
+    <view class="frame6">
+      <text class="text">{{ title }}</text>
+      <view v-if="showSettings" class="settings-btn" @click="handleSettingsClick">
+        <image src="/static/settings-gear.svg" class="settings-icon" />
+      </view>
     </view>
   </view>
 </template>
@@ -31,21 +34,21 @@ const handleSettingsClick = () => {
 <style scoped>
 .frame4 {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
   background: rgba(255, 255, 255, 0.5);
-  padding: 10px 15px;
+  /* padding: 10px 15px; */
   width: 100%;
-  height: 44px;
+  height: 10%;
   position: fixed;
   top: 0;
   left: 0;
-  padding-top: env(safe-area-inset-top);
+  /* padding-top: env(safe-area-inset-top); */
   z-index: 1000;
 }
 
 .text {
-  line-height: 22px;
+  /* line-height: 22px; */
   letter-spacing: 0;
   color: #000000;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
@@ -70,6 +73,19 @@ const handleSettingsClick = () => {
 
 .settings-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.frame5 {
+  height: env(safe-area-inset-top);
+  width: 100%;
+}
+
+.frame6 {
+  height: calc(100% - env(safe-area-inset-top));
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .settings-icon {

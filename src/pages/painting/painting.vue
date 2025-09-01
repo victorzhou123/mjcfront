@@ -254,8 +254,8 @@ onMounted(() => {
 
 .auto-wrapper {
   position: absolute;
-  top: calc(44px + env(safe-area-inset-top));
-  bottom: calc(109px + 10vh + env(safe-area-inset-bottom));
+  top: 10%;
+  bottom: 12%;
   left: 0;
   right: 0;
   width: 100%;
