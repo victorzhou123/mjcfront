@@ -1,7 +1,7 @@
 <template>
   <view class="setting">
     <!-- 顶部返回按钮 -->
-    <image src="/static/chevron-left.svg" class="chevron-left" @click="goBack" />
+    <BackButton />
     
     <!-- 订阅会员选项 -->
     <view class="frame555">
@@ -34,24 +34,7 @@
 
 <script setup>
 import { ref } from 'vue'
-
-// 返回上一页
-const goBack = () => {
-  // #ifdef H5
-  if (window.history.length > 1) {
-    window.history.back()
-  } else {
-    // 如果没有历史记录，跳转到空间页面
-     uni.reLaunch({
-       url: '/pages/space/space'
-     })
-  }
-  // #endif
-  
-  // #ifndef H5
-  uni.navigateBack()
-  // #endif
-}
+import BackButton from '@/components/BackButton.vue'
 
 // 跳转到订阅会员页面
 const goToSubscription = () => {
@@ -85,22 +68,12 @@ const goToPrivacyPolicy = () => {
   overflow: hidden;
 }
 
-.chevron-left {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  overflow: hidden;
-  margin-left: 18px;
-  margin-top: 18px;
-  cursor: pointer;
-}
-
 .frame555 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   align-self: center;
-  width: 100%;
+  width: 80%;
   max-width: 400px;
   margin-top: 2px;
   padding: 20px 10px 10px;
@@ -149,7 +122,7 @@ const goToPrivacyPolicy = () => {
   flex-direction: column;
   align-items: flex-start;
   align-self: center;
-  width: 100%;
+  width: 80%;
   max-width: 400px;
   padding: 10px;
   row-gap: 10px;

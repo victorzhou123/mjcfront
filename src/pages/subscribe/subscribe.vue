@@ -1,9 +1,7 @@
 <template>
   <div class="subscribe">
     <!-- 返回按钮 -->
-    <div class="back-button" @click="goBack">
-      <img src="/static/mezlhoga-cuvmu7v.svg" class="chevron-left" />
-    </div>
+    <BackButton icon-src="/static/mezlhoga-cuvmu7v.svg" default-route="/pages/setting/setting" />
     
     <!-- 标题 -->
     <div class="text">解锁以下全部功能</div>
@@ -69,23 +67,7 @@
 </template>
 
 <script setup>
-// 返回上一页
-const goBack = () => {
-  console.log('返回按钮被点击')
-  try {
-    // 在Vue3 + Vite环境下，直接使用浏览器的history API
-    if (window.history.length > 1) {
-      window.history.back()
-    } else {
-      // 如果没有历史记录，跳转到设置页面
-      window.location.href = '/#/pages/setting/setting'
-    }
-  } catch (error) {
-    console.error('返回操作失败:', error)
-    // 备用方案：直接跳转到设置页面
-    window.location.href = '/#/pages/setting/setting'
-  }
-}
+import BackButton from '@/components/BackButton.vue'
 
 // 订阅功能
 const subscribe = () => {
@@ -115,21 +97,7 @@ const restorePurchase = () => {
   box-sizing: border-box;
 }
 
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px 20px 10px 20px;
-  cursor: pointer;
-  align-self: flex-start;
-}
 
-.chevron-left {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  overflow: hidden;
-}
 
 .text {
   padding: 10px 10px 26px 10px;
