@@ -44,6 +44,7 @@
     
     <!-- 底部输入区域 -->
     <InputArea 
+      class="input-area"
       ref="inputAreaRef"
       :is-generating="isGenerating" 
       @generate="handleGenerate"
@@ -252,10 +253,11 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+/* absolute-height: 78% */
 .auto-wrapper {
   position: absolute;
-  top: 10%;
-  bottom: 12%;
+  bottom: 22%;
+  height: 68%;
   left: 0;
   right: 0;
   width: 100%;
@@ -266,9 +268,19 @@ onMounted(() => {
 .frame554 {
   flex: 1;
   width: 100%;
-  padding: 0 8px 20px 8px;
+  padding: 0 8px;
   height: 100%;
   overflow-y: auto;
+}
+
+/* absolute-height: 10% */
+.input-area {
+  position: fixed;
+  bottom: 12%;
+  height: 10%;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 .ellipse1 {

@@ -177,7 +177,7 @@ const handleImageError = (index) => {
 /* 媒体查询 - 手机设备 */
 @media (max-width: 480px) {
   .frame554 {
-    padding: 3vw;
+    padding: 0 3vw;
   }
   
   .image-grid {
@@ -189,7 +189,7 @@ const handleImageError = (index) => {
 /* 媒体查询 - 平板设备 */
 @media (min-width: 481px) and (max-width: 768px) {
   .frame554 {
-    padding: 3.5vw;
+    padding: 0 3.5vw;
   }
   
   .image-grid {
@@ -201,7 +201,7 @@ const handleImageError = (index) => {
 /* 媒体查询 - 桌面设备 */
 @media (min-width: 769px) {
   .frame554 {
-    padding: 2vw;
+    padding: 0 2vw;
     max-width: 1200px;
     margin: 0 auto;
   }

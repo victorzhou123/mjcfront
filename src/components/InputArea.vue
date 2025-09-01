@@ -93,16 +93,9 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2vw;
-  padding: 1.5vw 2vw;
-  padding-bottom: calc(1.5vw + env(safe-area-inset-bottom));
   width: 100%;
-  height: 10vh;
-  min-height: 42px;
-  max-height: 60px;
   background: #f4f0eb;
   position: fixed;
-  bottom: calc(67px + env(safe-area-inset-bottom));
   left: 0;
   z-index: 999;
 }
