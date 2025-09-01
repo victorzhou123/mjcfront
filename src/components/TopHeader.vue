@@ -39,7 +39,7 @@ const handleSettingsClick = () => {
   background: rgba(255, 255, 255, 0.5);
   /* padding: 10px 15px; */
   width: 100%;
-  height: 10%;
+  height: 13%;
   position: fixed;
   top: 0;
   left: 0;

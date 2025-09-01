@@ -253,11 +253,11 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-/* absolute-height: 78% */
+/* absolute-height: 75% */
 .auto-wrapper {
   position: absolute;
   bottom: 22%;
-  height: 68%;
+  height: 65%;
   left: 0;
   right: 0;
   width: 100%;

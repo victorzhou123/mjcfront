@@ -148,8 +148,8 @@ const handleImageError = (index) => {
 
 .auto-wrapper {
   position: absolute;
-  top: 10%;
   bottom: 12%;
+  height: 75%;
   width: 100%;
   /* padding: 0 20vw; */
   display: flex;
