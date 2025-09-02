@@ -12,13 +12,13 @@
         <img src="/static/mezlhoga-u3wpw94.svg" class="vip-line1" />
         <div class="text2">快速通道</div>
       </div>
-      <div class="frame559">
+      <div class="frame558">
         <div class="vip-line12">
           <img src="/static/mezlhoga-n8hj0kb.svg" class="icon" />
         </div>
         <div class="text2">海量绘画次数</div>
       </div>
-      <div class="frame559">
+      <div class="frame558">
         <div class="vip-line12">
           <img src="/static/mezlhoga-x0f1cdk.svg" class="icon" />
         </div>
@@ -28,7 +28,7 @@
     
     <!-- 会员套餐区域 -->
     <div class="frame572">
-      <div class="frame570">
+      <div class="frame575">
         <div class="frame566">
           <div class="text3">年度会员</div>
           <div class="price">¥ 498</div>
@@ -38,9 +38,9 @@
           <div class="text3">季度会员</div>
           <div class="price">¥ 168</div>
           <div class="text4">¥ 1.8 / 天</div>
-        </div>
+        </div> 
       </div>
-      <div class="frame571">
+      <div class="frame575">
         <div class="frame566">
           <div class="text3">月费会员</div>
           <div class="price">¥ 78</div>
@@ -97,8 +97,6 @@ const restorePurchase = () => {
   box-sizing: border-box;
 }
 
-
-
 .text {
   padding: 10px 10px 26px 10px;
   width: 100%;
@@ -112,13 +110,14 @@ const restorePurchase = () => {
 
 .frame561 {
   display: flex;
+  flex-direction: row;
   align-items: center;
   align-self: stretch;
   justify-content: center;
-  column-gap: 37px;
+  column-gap: 10px;
   margin: 30px 20px;
-  width: calc(100% - 40px);
-  padding: 20px;
+  width: 100%;
+  /* padding: 20px; */
 }
 
 .text2 {
@@ -136,13 +135,12 @@ const restorePurchase = () => {
 .frame558 {
   display: flex;
   flex-direction: column;
-  flex: 1;
   align-items: center;
   justify-content: center;
   border-radius: 15px;
   background: rgba(255, 130, 12, 0.3);
-  min-height: 100px;
-  padding: 10px;
+  height: 86px;
+  width: 100px;
 }
 
 .vip-line1 {
@@ -150,18 +148,6 @@ const restorePurchase = () => {
   width: 44px;
   height: 44px;
   overflow: hidden;
-}
-
-.frame559 {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  border-radius: 15px;
-  background: rgba(255, 130, 12, 0.3);
-  min-height: 100px;
-  padding: 10px;
 }
 
 .vip-line12 {
@@ -186,24 +172,31 @@ const restorePurchase = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   align-self: stretch;
   margin-top: 64px;
-  row-gap: 37px;
+  gap: 37px;
   width: 100%;
   padding: 0 20px;
+}
+
+.frame575 {
+  display: flex;
+  flex-direction: row;
+  width: 70%;
+  justify-content: center;
+  gap: 20px;
 }
 
 .frame566 {
   display: flex;
   flex-direction: column;
-  flex: 1;
   align-items: center;
   border-radius: 15px;
   background: rgba(255, 130, 12, 0.3);
-  padding: 15px 10px;
   row-gap: 10px;
-  min-width: 120px;
-  max-width: 200px;
+  width: 95px;
+  height: 114px;
 }
 
 .text3 {
@@ -236,16 +229,6 @@ const restorePurchase = () => {
   color: #000000;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
   font-size: 16px;
-}
-
-.frame570 {
-  display: flex;
-  align-items: center;
-  align-self: stretch;
-  justify-content: center;
-  column-gap: 20px;
-  flex-wrap: wrap;
-  row-gap: 20px;
 }
 
 .frame571 {
@@ -304,9 +287,9 @@ const restorePurchase = () => {
   text-align: center;
   line-height: 28px;
   letter-spacing: 0;
-  color: #000000;
+  color: #909090;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -322,15 +305,12 @@ const restorePurchase = () => {
   }
   
   .frame561 {
-    flex-direction: column;
+    flex-direction: row;
     row-gap: 15px;
     margin: 30px auto;
-    padding: 15px;
-    max-width: 350px;
   }
   
-  .frame558, .frame559 {
-    width: 100%;
+  .frame558 {
     max-width: 280px;
     margin: 0 auto;
   }
@@ -338,7 +318,6 @@ const restorePurchase = () => {
   .frame572 {
     margin: 40px auto 0;
     row-gap: 25px;
-    max-width: 350px;
     padding: 0 10px;
   }
   
@@ -348,14 +327,13 @@ const restorePurchase = () => {
     padding: 0 10px;
   }
   
-  .frame570, .frame571 {
+  .frame571 {
     flex-direction: column;
     row-gap: 20px;
     align-items: center;
   }
   
   .frame566 {
-    width: 100%;
     max-width: 280px;
     margin: 0 auto;
   }
@@ -392,13 +370,10 @@ const restorePurchase = () => {
   }
   
   .frame561 {
-    max-width: 500px;
     margin: 30px auto;
-    padding: 20px;
   }
   
   .frame572 {
-    max-width: 500px;
     margin: 64px auto 0;
     padding: 0 15px;
   }
@@ -409,7 +384,7 @@ const restorePurchase = () => {
     padding: 0 15px;
   }
   
-  .frame570, .frame571 {
+  .frame571 {
     column-gap: 30px;
     justify-content: center;
   }
@@ -439,13 +414,10 @@ const restorePurchase = () => {
   }
   
   .frame561 {
-    max-width: 600px;
     margin: 30px auto;
-    padding: 20px;
   }
   
   .frame572 {
-    max-width: 600px;
     margin: 64px auto 0;
     padding: 0 20px;
   }
@@ -456,7 +428,7 @@ const restorePurchase = () => {
     padding: 0 20px;
   }
   
-  .frame570, .frame571 {
+  .frame571 {
     column-gap: 40px;
     justify-content: center;
   }
