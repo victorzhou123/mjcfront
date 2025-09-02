@@ -29,24 +29,24 @@
     <!-- 会员套餐区域 -->
     <div class="frame572">
       <div class="frame575">
-        <div class="frame566">
+        <div class="frame566" :class="{ selected: selectedPlan === 'yearly' }" @click="selectPlan('yearly')">
           <div class="text3">年度会员</div>
           <div class="price">¥ 498</div>
           <div class="text4">¥ 1.3 / 天</div>
         </div>
-        <div class="frame566">
+        <div class="frame566" :class="{ selected: selectedPlan === 'quarterly' }" @click="selectPlan('quarterly')">
           <div class="text3">季度会员</div>
           <div class="price">¥ 168</div>
           <div class="text4">¥ 1.8 / 天</div>
         </div> 
       </div>
       <div class="frame575">
-        <div class="frame566">
+        <div class="frame566" :class="{ selected: selectedPlan === 'monthly' }" @click="selectPlan('monthly')">
           <div class="text3">月费会员</div>
           <div class="price">¥ 78</div>
           <div class="text4">¥ 2.5 / 天</div>
         </div>
-        <div class="frame566">
+        <div class="frame566" :class="{ selected: selectedPlan === 'weekly' }" @click="selectPlan('weekly')">
           <div class="text3">周费会员</div>
           <div class="price">¥ 38</div>
           <div class="text4">¥ 5.4 / 天</div>
@@ -67,12 +67,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import BackButton from '@/components/BackButton.vue'
+
+// 会员套餐选择状态
+const selectedPlan = ref('yearly') // 默认选中年度会员
+
+// 会员套餐选择
+const selectPlan = (plan) => {
+  selectedPlan.value = plan
+  console.log('选中套餐:', plan)
+}
 
 // 订阅功能
 const subscribe = () => {
   // TODO: 实现订阅功能
-  console.log('立即订阅')
+  console.log('立即订阅', selectedPlan.value)
 }
 
 // 恢复购买
@@ -196,6 +206,21 @@ const restorePurchase = () => {
   row-gap: 10px;
   width: 95px;
   height: 114px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.frame566:hover {
+  background: rgba(255, 130, 12, 0.4);
+  transform: translateY(-2px);
+}
+
+.frame566.selected {
+  background: rgba(255, 130, 12, 0.6);
+  border: 2px solid #ff820c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 130, 12, 0.3);
 }
 
 .text3 {
