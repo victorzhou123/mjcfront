@@ -177,7 +177,6 @@ const restorePurchase = () => {
   margin-top: 64px;
   gap: 37px;
   width: 100%;
-  padding: 0 20px;
 }
 
 .frame575 {
@@ -306,7 +305,6 @@ const restorePurchase = () => {
   
   .frame561 {
     flex-direction: row;
-    row-gap: 15px;
     margin: 30px auto;
   }
   
@@ -317,8 +315,6 @@ const restorePurchase = () => {
   
   .frame572 {
     margin: 40px auto 0;
-    row-gap: 25px;
-    padding: 0 10px;
   }
   
   .frame576 {
@@ -340,7 +336,6 @@ const restorePurchase = () => {
   
   .text {
     font-size: 18px;
-    padding: 20px 15px;
     max-width: 350px;
     margin: 0 auto;
   }
@@ -375,7 +370,6 @@ const restorePurchase = () => {
   
   .frame572 {
     margin: 64px auto 0;
-    padding: 0 15px;
   }
   
   .frame576 {
@@ -419,7 +413,6 @@ const restorePurchase = () => {
   
   .frame572 {
     margin: 64px auto 0;
-    padding: 0 20px;
   }
   
   .frame576 {
