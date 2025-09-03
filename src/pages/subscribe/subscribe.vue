@@ -29,27 +29,29 @@
     <!-- 会员套餐区域 -->
     <div class="frame572">
       <div class="frame575">
-        <div class="frame566" :class="{ selected: selectedPlan === 'yearly' }" @click="selectPlan('yearly')">
-          <div class="text3">年度会员</div>
-          <div class="price">¥ 498</div>
-          <div class="text4">¥ 1.3 / 天</div>
+        <div 
+          v-for="(plan, index) in planData.slice(0, 2)" 
+          :key="plan.key"
+          class="frame566" 
+          :class="{ selected: selectedPlan === plan.key }" 
+          @click="selectPlan(plan.key)"
+        >
+          <div class="text3">{{ plan.title }}</div>
+          <div class="price">¥ {{ plan.priceNum }}</div>
+          <div class="text4">¥ {{ plan.perDay }} / 天</div>
         </div>
-        <div class="frame566" :class="{ selected: selectedPlan === 'quarterly' }" @click="selectPlan('quarterly')">
-          <div class="text3">季度会员</div>
-          <div class="price">¥ 168</div>
-          <div class="text4">¥ 1.8 / 天</div>
-        </div> 
       </div>
       <div class="frame575">
-        <div class="frame566" :class="{ selected: selectedPlan === 'monthly' }" @click="selectPlan('monthly')">
-          <div class="text3">月费会员</div>
-          <div class="price">¥ 78</div>
-          <div class="text4">¥ 2.5 / 天</div>
-        </div>
-        <div class="frame566" :class="{ selected: selectedPlan === 'weekly' }" @click="selectPlan('weekly')">
-          <div class="text3">周费会员</div>
-          <div class="price">¥ 38</div>
-          <div class="text4">¥ 5.4 / 天</div>
+        <div 
+          v-for="(plan, index) in planData.slice(2, 4)" 
+          :key="plan.key"
+          class="frame566" 
+          :class="{ selected: selectedPlan === plan.key }" 
+          @click="selectPlan(plan.key)"
+        >
+          <div class="text3">{{ plan.title }}</div>
+          <div class="price">¥ {{ plan.priceNum }}</div>
+          <div class="text4">¥ {{ plan.perDay }} / 天</div>
         </div>
       </div>
     </div>
@@ -57,21 +59,45 @@
     <!-- 底部订阅按钮区域 -->
     <div class="frame576">
       <div class="frame574">
-        <div class="frame573" @click="subscribe">
-          <div class="text3">立即订阅</div>
+        <div class="frame573" 
+             :class="{ disabled: isSubscribing || isRestoring }"
+             @click="!isSubscribing && !isRestoring && subscribe()">
+          <div class="text3">{{ isSubscribing ? '订阅中...' : '立即订阅' }}</div>
         </div>
       </div>
-      <div class="text5" @click="restorePurchase">恢复购买</div>
+      <div class="text5" 
+           :class="{ disabled: isSubscribing || isRestoring }"
+           @click="!isSubscribing && !isRestoring && restorePurchase()">{{ isRestoring ? '恢复中...' : '恢复购买' }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BackButton from '@/components/BackButton.vue'
+import { IAP_PRODUCTS, iapManager } from '@/utils/ipa.js'
 
 // 会员套餐选择状态
 const selectedPlan = ref('yearly') // 默认选中年度会员
+
+// 加载状态
+const isRestoring = ref(false)
+const isSubscribing = ref(false)
+
+// 会员套餐数据
+const planData = computed(() => {
+  const plans = [
+    { key: 'yearly', productId: 'mjc.vip.year' },
+    { key: 'quarterly', productId: 'mjc.vip.quarter' },
+    { key: 'monthly', productId: 'mjc.vip.month' },
+    { key: 'weekly', productId: 'mjc.vip.week' }
+  ]
+  
+  return plans.map(plan => ({
+    ...plan,
+    ...IAP_PRODUCTS[plan.productId]
+  }))
+})
 
 // 会员套餐选择
 const selectPlan = (plan) => {
@@ -80,15 +106,86 @@ const selectPlan = (plan) => {
 }
 
 // 订阅功能
-const subscribe = () => {
-  // TODO: 实现订阅功能
-  console.log('立即订阅', selectedPlan.value)
+const subscribe = async () => {
+  if (isSubscribing.value) {
+    return; // 防止重复点击
+  }
+  
+  try {
+    // 获取当前选中的套餐信息
+    const currentPlan = planData.value.find(plan => plan.key === selectedPlan.value)
+    if (!currentPlan) {
+      uni.showToast({
+        title: '请选择套餐',
+        icon: 'none'
+      })
+      return
+    }
+
+    console.log('开始订阅:', currentPlan.productId)
+    isSubscribing.value = true
+    
+    // 显示加载提示
+    uni.showLoading({
+      title: '正在处理订阅...',
+      mask: true
+    })
+    
+    // 初始化IAP管理器
+    await iapManager.init()
+    
+    // 调用购买产品方法
+    const result = await iapManager.purchaseProduct(currentPlan.productId)
+    
+    console.log('订阅成功:', result)
+    uni.showToast({
+      title: '订阅成功',
+      icon: 'success'
+    })
+    
+  } catch (error) {
+    console.error('订阅失败:', error)
+    uni.showToast({
+      title: error.message || '订阅失败',
+      icon: 'none'
+    })
+  } finally {
+    uni.hideLoading()
+    isSubscribing.value = false
+  }
 }
 
 // 恢复购买
-const restorePurchase = () => {
-  // TODO: 实现恢复购买功能
+const restorePurchase = async () => {
+  if (isRestoring.value) {
+    return; // 防止重复点击
+  }
+  
   console.log('恢复购买')
+  isRestoring.value = true
+  
+  // 显示加载提示
+  uni.showLoading({
+    title: '正在恢复购买...',
+    mask: true
+  })
+  
+  try {
+    await iapManager.init()
+    
+    const res = await iapManager.restoreTransactions()
+    if (res.success) {
+      uni.showToast({ title: '恢复购买成功', icon: 'success' });
+    } else {
+      uni.showToast({ title: '恢复购买失败', icon: 'none' });
+    }
+  } catch (err) {
+    console.error('恢复购买失败:', err);
+    uni.showToast({ title: '恢复购买失败', icon: 'none' });
+  } finally {
+    uni.hideLoading()
+    isRestoring.value = false
+  }
 }
 </script>
 
@@ -465,5 +562,20 @@ const restorePurchase = () => {
   .text3 {
     font-size: 22px;
   }
+}
+
+/* 禁用状态样式 */
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.frame573.disabled {
+  background: #ccc !important;
+}
+
+.text5.disabled {
+  color: #999 !important;
 }
 </style>
