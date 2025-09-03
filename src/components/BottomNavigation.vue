@@ -107,10 +107,9 @@ const navigateToSpace = () => {
 .brush-line1 {
   width: 30px;
   height: 28px;
-  filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
 }
 
-.frame1.active .brush-line1 {
+.frame1.active {
   filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(25deg) brightness(118%) contrast(119%);
 }
 
@@ -147,10 +146,9 @@ const navigateToSpace = () => {
 .user-line1 {
   width: 30px;
   height: 28px;
-  filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
 }
 
-.frame2.active .user-line1 {
+.frame2.active {
   filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(25deg) brightness(118%) contrast(119%);
 }
 
