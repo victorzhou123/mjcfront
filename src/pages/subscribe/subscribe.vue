@@ -9,18 +9,18 @@
     <!-- 功能图标区域 -->
     <div class="frame561">
       <div class="frame558">
-        <img src="/static/mezlhoga-u3wpw94.svg" class="vip-line1" />
+        <image src="/static/mezlhoga-u3wpw94.svg" class="vip-line1" />
         <div class="text2">快速通道</div>
       </div>
       <div class="frame558">
         <div class="vip-line12">
-          <img src="/static/mezlhoga-n8hj0kb.svg" class="icon" />
+          <image src="/static/mezlhoga-n8hj0kb.svg" class="icon" />
         </div>
         <div class="text2">海量绘画次数</div>
       </div>
       <div class="frame558">
         <div class="vip-line12">
-          <img src="/static/mezlhoga-x0f1cdk.svg" class="icon" />
+          <image src="/static/mezlhoga-x0f1cdk.svg" class="icon" />
         </div>
         <div class="text2">云端存储</div>
       </div>
