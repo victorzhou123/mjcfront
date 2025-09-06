@@ -1,3 +1,5 @@
+import { baseComponent } from './base.js';
+
 export const IAP_PRODUCTS = {
     'mjc.vip.year': {
         productId: 'mjc.vip.year',
@@ -45,108 +47,87 @@ class IAPManager {
             return;
         }
 
-        await this.getChannel();
+        if (!baseComponent.isInit) {
+            await baseComponent.init()
+        }
+
+        this.channel = baseComponent.channel
 
         await this.getProducts();
+
+        this.isInit = true;
 
         console.log('IAP初始化完成');
     }
 
-    async getChannel() {
-        console.log('开始获取IAP支付通道');
+    async getProducts(productIds) {
+        console.log('开始获取iap商品列表');
         return new Promise((resolve, reject) => {
-            if (this.channel !== null) {
-                this.isInit = true;
-                resolve(this.channel);
-                return;
-            }
+        this.channel.requestProduct(productIds || Object.keys(IAP_PRODUCTS), (res) => {
+            // 打印商品列表
+            console.log('获取到的商品列表:', res);
+            this.products = res;
+            resolve(res);
+        }, (err) => {
+            // 打印错误信息
+            console.error('获取商品列表失败:', err);
+            reject(err);
+        })
+        });
+    }
 
-            uni.getProvider({
-                service: 'payment',
-                success: (res) => {
-                this.channel = res.providers.find((channel) => {
-                    return (channel.id === 'appleiap');
-                });
+    async purchaseProduct(productId) {
+        try {
+        console.log('开始购买产品:', productId);
+        
+        if (!this.isInit) {
+            throw new Error('IAP未初始化');
+        }
+        
+        // 查找产品信息
+        const product = this.products.find(p => p.productid === productId) || IAP_PRODUCTS[productId];
+        if (!product) {
+            throw new Error(`未找到产品: ${productId}`);
+        }
 
-                if (this.channel) {
-                    this.isInit = true;
-                    resolve(this.channel);
-                } else {
-                    this.initError = {
-                        errMsg: 'paymentContext:fail iap service not found'
-                    };
-                    reject(this.initError);
-                }
-                },
-                fail: (error) => {
-                    this.initError = error;
+        // 向后端校验
+        const res = await this.serverCheckPurchase(productId);
+        if (!res.success) {
+            throw new Error('后端校验失败');
+        }
+        
+        return new Promise((resolve, reject) => {
+            uni.requestPayment({
+            provider: 'appleiap',
+            orderInfo: {
+                productid: productId
+            },
+            success: async (result) => {
+                console.log('购买成功:', result);
+                try {
+                    await this.handlePurchaseSuccess(result, product);
+                    resolve(result);
+                } catch (error) {
+                    console.error('处理购买成功回调失败:', error);
                     reject(error);
                 }
+            },
+            fail: async (error) => {
+                console.error('购买失败:', error);
+                try {
+                    await this.handlePurchaseError(error, productId);
+                } catch (handleError) {
+                    console.error('处理购买失败回调失败:', handleError);
+                }
+                reject(error);
+            }
             });
         });
+        } catch (error) {
+        console.error('购买产品失败:', error);
+        throw error;
+        }
     }
-
-  async getProducts(productIds) {
-    console.log('开始获取iap商品列表');
-    return new Promise((resolve, reject) => {
-      this.channel.requestProduct(productIds || Object.keys(IAP_PRODUCTS), (res) => {
-        // 打印商品列表
-        console.log('获取到的商品列表:', res);
-        this.products = res;
-        resolve(res);
-      }, (err) => {
-        // 打印错误信息
-        console.error('获取商品列表失败:', err);
-        reject(err);
-      })
-    });
-  }
-
-  async purchaseProduct(productId) {
-    try {
-      console.log('开始购买产品:', productId);
-      
-      if (!this.isInit) {
-        throw new Error('IAP未初始化');
-      }
-      
-      const product = this.products.find(p => p.productid === productId) || IAP_PRODUCTS[productId];
-      if (!product) {
-        throw new Error(`未找到产品: ${productId}`);
-      }
-      
-      return new Promise((resolve, reject) => {
-        uni.requestPayment({
-          provider: 'appleiap',
-          orderInfo: {
-            productid: productId
-          },
-          success: async (result) => {
-            console.log('购买成功:', result);
-            try {
-              await this.handlePurchaseSuccess(result, product);
-              resolve(result);
-            } catch (error) {
-              console.error('处理购买成功回调失败:', error);
-              reject(error);
-            }
-          },
-          fail: async (error) => {
-            console.error('购买失败:', error);
-            try {
-              await this.handlePurchaseError(error, productId);
-            } catch (handleError) {
-              console.error('处理购买失败回调失败:', handleError);
-            }
-            reject(error);
-          }
-        });
-      });
-    } catch (error) {
-      console.error('购买产品失败:', error);
-      throw error;
-    }
-  }
 
     /**
     * 处理购买成功
@@ -195,7 +176,7 @@ class IAPManager {
         try {
         console.log('开始验证收据:', result);
         
-        // 这里应该调用服务器验证收据
+        // 这里应该调用服务器验证收据，请求后端接口
         // 目前先返回成功，实际项目中需要实现服务器验证
         const verifyResult = await this.serverVerifyReceipt(result.receipt);
         
