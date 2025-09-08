@@ -60,6 +60,7 @@ import { ref, reactive, onMounted, nextTick, computed, watch } from 'vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import InputArea from '@/components/InputArea.vue'
+import { painter } from '@/utils/painter.js'
 
 // 响应式数据
 const isGenerating = ref(false)
@@ -117,14 +118,33 @@ const handleGenerate = async (inputText) => {
   isGenerating.value = true
   
   try {
-    // 模拟调用后端API
-    // 这里应该替换为实际的API调用
-    await simulateAPICall(prompt)
+    // 调用真实的API
+    const taskId = await painter.paint(prompt)
+    console.log('任务ID:', taskId)
     
-    // 模拟返回图片URL
+    // 轮询任务状态直到完成
+    let result
+    while (true) {
+      result = await painter.pollTaskStatus(taskId)
+      console.log('任务状态:', result.status)
+      
+      if (result.status === 2) {
+        // 任务完成
+        break
+      }
+      
+      // 等待1秒后继续请求
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    
+    // 更新AI回复的图片URL
     const lastReply = aiReplies.value[aiReplies.value.length - 1]
-    // 使用静态资源路径
-    lastReply.imageUrl = '/static/WechatIMG100.jpeg' // 临时使用用户指定的图片
+    if (result.images && result.images.length > 0) {
+      lastReply.imageUrl = result.images[0] // 使用第一张图片
+      console.log('生成的图片URL:', lastReply.imageUrl)
+    } else {
+      throw new Error('未获取到生成的图片')
+    }
     
     // 图片加载完成后滚动到底部
     await nextTick()
@@ -140,24 +160,18 @@ const handleGenerate = async (inputText) => {
     
   } catch (error) {
     console.error('生成图片失败:', error)
+    
+    // 移除失败的AI回复
+    aiReplies.value.pop()
+    
     uni.showToast({
-      title: '生成失败，请重试',
+      title: error.message || '生成失败，请重试',
       icon: 'none'
     })
   } finally {
     isGenerating.value = false
   }
 }
-
-// 模拟API调用
-const simulateAPICall = (prompt) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, 3000) // 模拟3秒生成时间
-  })
-}
-
 
 // 滚动到底部
 const scrollToBottom = async () => {
@@ -220,6 +234,23 @@ const allMessages = computed(() => {
   // 按时间戳升序排序
   return messages.sort((a, b) => a.timestampValue - b.timestampValue)
 })
+
+// 图片加载成功处理
+const handleImageLoad = (e) => {
+  console.log('图片加载成功:', e.target.src)
+}
+
+// 图片加载错误处理
+const handleImageError = (e) => {
+  console.error('图片加载失败:', e.target.src)
+  console.error('错误详情:', e)
+  
+  // 可以尝试重新加载或显示默认图片
+  uni.showToast({
+    title: '图片加载失败',
+    icon: 'none'
+  })
+}
 
 // 页面加载时的初始化
 onMounted(() => {
@@ -399,7 +430,7 @@ onMounted(() => {
 
 .ai-image {
   max-width: 100%;
-  height: auto;
+  /* height: auto; */
   max-height: 400px;
   object-fit: contain;
 }

@@ -62,6 +62,15 @@
         },
         "usingComponents" : true
     },
+    "h5" : {
+        "devServer" : {
+            "https" : false
+        }
+    },
+    "networkTimeout" : {
+        "request" : 60000,
+        "downloadFile" : 60000
+    },
     "mp-alipay" : {
         "usingComponents" : true
     },
