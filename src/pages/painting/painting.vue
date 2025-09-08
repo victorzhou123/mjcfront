@@ -30,16 +30,16 @@
               <text class="ai-timestamp">{{ message.timestamp }}</text>
               <view class="rectangle1">
                 <!-- 单张图片显示 -->
-                <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.imageUrl)" />
                 <!-- 4张图片网格显示 -->
                 <view v-else-if="message.images && message.images.length === 4" class="images-grid">
                   <view class="grid-row">
-                    <image :src="message.images[0]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
-                    <image :src="message.images[1]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                    <image :src="message.images[0]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[0], message.images)" />
+                    <image :src="message.images[1]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[1], message.images)" />
                   </view>
                   <view class="grid-row">
-                    <image :src="message.images[2]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
-                    <image :src="message.images[3]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                    <image :src="message.images[2]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[2], message.images)" />
+                    <image :src="message.images[3]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[3], message.images)" />
                   </view>
                 </view>
                 <!-- 加载中状态 -->
@@ -65,6 +65,40 @@
     
     <!-- 底部导航栏 -->
     <BottomNavigation current-page="painting" />
+    
+    <!-- 图片预览弹窗 -->
+    <view v-if="showImagePreview" class="image-preview-modal" @tap="closeImagePreview">
+      <view class="preview-container" @tap.stop>
+        <!-- 关闭按钮 -->
+        <view class="close-btn" @tap="closeImagePreview">
+          <text class="close-icon">×</text>
+        </view>
+        
+        <!-- 图片显示区域 -->
+        <view class="preview-image-container">
+          <image 
+            :src="previewImages[currentImageIndex]" 
+            class="preview-image" 
+            mode="aspectFit"
+          />
+        </view>
+        
+        <!-- 多图片时的导航按钮 -->
+        <view v-if="previewImages.length > 1" class="nav-buttons">
+          <view class="nav-btn prev-btn" @tap="switchImage('prev')">
+            <text class="nav-icon">‹</text>
+          </view>
+          <view class="nav-btn next-btn" @tap="switchImage('next')">
+            <text class="nav-icon">›</text>
+          </view>
+        </view>
+        
+        <!-- 图片指示器 -->
+        <view v-if="previewImages.length > 1" class="image-indicator">
+          <text class="indicator-text">{{ currentImageIndex + 1 }} / {{ previewImages.length }}</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -83,6 +117,11 @@ const scrollViewRef = ref(null)
 const scrollTop = ref(0)
 const scrollIntoView = ref('')
 const inputAreaRef = ref(null)
+
+// 图片预览相关
+const showImagePreview = ref(false)
+const previewImages = ref([])
+const currentImageIndex = ref(0)
 
 // 格式化时间戳
 const formatTimestamp = (addSeconds = 0) => {
@@ -220,6 +259,34 @@ watch([userMessages, aiReplies], async () => {
     scrollToBottom()
   }, 100)
 }, { deep: true, flush: 'post' })
+
+// 图片预览相关方法
+const previewImage = (imageUrl, allImages = []) => {
+  if (allImages.length > 0) {
+    previewImages.value = allImages
+    currentImageIndex.value = allImages.findIndex(img => img === imageUrl)
+  } else {
+    previewImages.value = [imageUrl]
+    currentImageIndex.value = 0
+  }
+  showImagePreview.value = true
+}
+
+const closeImagePreview = () => {
+  showImagePreview.value = false
+  previewImages.value = []
+  currentImageIndex.value = 0
+}
+
+const switchImage = (direction) => {
+  if (previewImages.value.length <= 1) return
+  
+  if (direction === 'prev') {
+    currentImageIndex.value = currentImageIndex.value > 0 ? currentImageIndex.value - 1 : previewImages.value.length - 1
+  } else {
+    currentImageIndex.value = currentImageIndex.value < previewImages.value.length - 1 ? currentImageIndex.value + 1 : 0
+  }
+}
 
 
 
@@ -499,4 +566,111 @@ onMounted(() => {
   width: 100%;
 }
 
+/* 图片预览弹窗样式 */
+.image-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-container {
+  position: relative;
+  width: 85%;
+  height: 75%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.close-icon {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.preview-image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.nav-buttons {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.nav-btn {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.prev-btn {
+  margin-left: -25px;
+}
+
+.next-btn {
+  margin-right: -25px;
+}
+
+.nav-icon {
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.image-indicator {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px 15px;
+  border-radius: 15px;
+}
+
+.indicator-text {
+  color: white;
+  font-size: 14px;
+}
 </style>
