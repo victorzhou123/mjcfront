@@ -68,7 +68,7 @@
     
     <!-- 图片预览弹窗 -->
     <view v-if="showImagePreview" class="image-preview-modal" @tap="closeImagePreview">
-      <view class="preview-container" @tap.stop>
+      <view class="preview-container">
         <!-- 关闭按钮 -->
         <view class="close-btn" @tap="closeImagePreview">
           <text class="close-icon">×</text>
@@ -80,21 +80,22 @@
             :src="previewImages[currentImageIndex]" 
             class="preview-image" 
             mode="aspectFit"
+            @tap.stop
           />
         </view>
         
         <!-- 多图片时的导航按钮 -->
         <view v-if="previewImages.length > 1" class="nav-buttons">
-          <view class="nav-btn prev-btn" @tap="switchImage('prev')">
+          <view class="nav-btn prev-btn" @tap.stop="switchImage('prev')">
             <text class="nav-icon">‹</text>
           </view>
-          <view class="nav-btn next-btn" @tap="switchImage('next')">
+          <view class="nav-btn next-btn" @tap.stop="switchImage('next')">
             <text class="nav-icon">›</text>
           </view>
         </view>
         
         <!-- 图片指示器 -->
-        <view v-if="previewImages.length > 1" class="image-indicator">
+        <view v-if="previewImages.length > 1" class="image-indicator" @tap.stop>
           <text class="indicator-text">{{ currentImageIndex + 1 }} / {{ previewImages.length }}</text>
         </view>
       </view>
@@ -631,18 +632,20 @@ onMounted(() => {
   transform: translateY(-50%);
   display: flex;
   justify-content: space-between;
-  pointer-events: none;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 .nav-btn {
   width: 50px;
   height: 50px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: auto;
+  cursor: pointer;
 }
 
 .prev-btn {
