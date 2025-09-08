@@ -29,7 +29,20 @@
             <view class="frame8">
               <text class="ai-timestamp">{{ message.timestamp }}</text>
               <view class="rectangle1">
-                <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" />
+                <!-- 单张图片显示 -->
+                <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                <!-- 4张图片网格显示 -->
+                <view v-else-if="message.images && message.images.length === 4" class="images-grid">
+                  <view class="grid-row">
+                    <image :src="message.images[0]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                    <image :src="message.images[1]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                  </view>
+                  <view class="grid-row">
+                    <image :src="message.images[2]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                    <image :src="message.images[3]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" />
+                  </view>
+                </view>
+                <!-- 加载中状态 -->
                 <view v-else class="loading-container">
                   <text class="loading-text">正在生成图片...</text>
                 </view>
@@ -105,7 +118,8 @@ const handleGenerate = async (inputText) => {
   // 创建AI回复占位，时间戳比用户消息晚1秒
   const aiReply = {
     timestamp: formatTimestamp(1),
-    imageUrl: null
+    imageUrl: null,
+    images: null
   }
   aiReplies.value.push(aiReply)
   
@@ -140,8 +154,18 @@ const handleGenerate = async (inputText) => {
     // 更新AI回复的图片URL
     const lastReply = aiReplies.value[aiReplies.value.length - 1]
     if (result.images && result.images.length > 0) {
-      lastReply.imageUrl = result.images[0] // 使用第一张图片
-      console.log('生成的图片URL:', lastReply.imageUrl)
+      if (result.images.length === 4) {
+        // 如果有4张图片，按顺序拼接显示
+        lastReply.images = result.images
+        lastReply.imageUrl = null // 清空单张图片URL
+        console.log('生成的4张图片URLs:', result.images)
+        console.log('aiReplies:', aiReplies)
+      } else {
+        // 如果不是4张图片，使用第一张
+        lastReply.imageUrl = result.images[0]
+        lastReply.images = null // 清空多张图片数组
+        console.log('生成的图片URL:', lastReply.imageUrl)
+      }
     } else {
       throw new Error('未获取到生成的图片')
     }
@@ -224,6 +248,7 @@ const allMessages = computed(() => {
         messages.push({
           type: 'ai',
           imageUrl: reply.imageUrl,
+          images: reply.images,
           timestamp: reply.timestamp,
           timestampValue: new Date(reply.timestamp).getTime()
         })
@@ -430,7 +455,6 @@ onMounted(() => {
 
 .ai-image {
   max-width: 100%;
-  /* height: auto; */
   max-height: 400px;
   object-fit: contain;
 }
@@ -449,6 +473,24 @@ onMounted(() => {
   text-align: center;
 }
 
+.images-grid {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  /* max-width: 300px; */
+}
+
+.grid-row {
+  display: flex;
+  width: fit-content;
+}
+
+.grid-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
 .frame93 {
   display: flex;
   align-items: flex-start;
@@ -456,10 +498,5 @@ onMounted(() => {
   padding: 20px 4vw 10px 2vw;
   width: 100%;
 }
-
-
-
-
-
 
 </style>

@@ -1,6 +1,7 @@
 class Painter {
     constructor() {
-        this.baseUrl = "http://interstellar.a22t.com"
+        // this.baseUrl = "http://interstellar.a22t.com"
+        this.baseUrl = "https://m1.apifoxmock.com/m1/7020404-0-default"
     }
 
     paint(prompt) {
