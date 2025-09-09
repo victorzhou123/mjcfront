@@ -110,6 +110,7 @@ import TopHeader from '@/components/TopHeader.vue'
 import InputArea from '@/components/InputArea.vue'
 import { painter } from '@/utils/painter.js'
 import { storage } from '@/utils/storage.js'
+import { imageStorage } from '@/utils/imageStorage.js'
 
 // 响应式数据
 const isGenerating = ref(false)
@@ -222,6 +223,9 @@ const handleGenerate = async (inputText) => {
     
     // 保存AI回复到本地存储
     saveChatHistory()
+    
+    // 保存图片到本地存储
+    await saveImagesToLocal(result.images, inputText)
     
     // AI回复完成后聚焦输入框
     await nextTick()
@@ -396,6 +400,77 @@ const saveChatHistory = () => {
     storage.saveChatHistory(userMessages.value, aiReplies.value)
   } catch (error) {
     console.error('保存对话记录失败:', error)
+  }
+}
+
+// 保存图片到本地存储
+const saveImagesToLocal = async (imageUrls, prompt) => {
+  if (!imageUrls || imageUrls.length === 0) {
+    console.log('没有图片需要保存')
+    return
+  }
+  
+  try {
+    console.log('开始保存图片到本地:', imageUrls)
+    
+    // 显示保存进度提示
+    uni.showLoading({
+      title: '正在保存图片...',
+      mask: true
+    })
+    
+    // 准备图片元数据
+    const metadata = {
+      prompt: prompt, // 用户输入的提示词
+      generatedAt: new Date().toISOString(),
+      imageCount: imageUrls.length
+    }
+    
+    // 批量保存图片
+    const savedPaths = await imageStorage.saveImages(imageUrls, metadata)
+    
+    console.log('图片保存成功:', savedPaths)
+    
+    // 隐藏加载提示
+    uni.hideLoading()
+    
+    // 显示保存成功提示
+    uni.showToast({
+      title: `${imageUrls.length}张图片已保存`,
+      icon: 'success',
+      duration: 2000
+    })
+    
+  } catch (error) {
+    console.error('保存图片失败:', error)
+    
+    // 隐藏加载提示
+    uni.hideLoading()
+    
+    // 处理部分成功的情况
+    if (error.partialSuccess && error.savedPaths && error.savedPaths.length > 0) {
+      const successCount = error.savedPaths.length
+      const totalCount = imageUrls.length
+      
+      console.log(`部分保存成功: 成功保存 ${successCount}/${totalCount} 张图片，剩余图片可能因网络问题保存失败`)
+      return
+    }
+    
+    // 根据错误类型打印不同的日志
+    let errorMessage = '图片保存失败'
+    if (error.message.includes('网络')) {
+      errorMessage = '网络连接失败，请检查网络后重试'
+    } else if (error.message.includes('跨域') || error.message.includes('CORS')) {
+      errorMessage = '图片下载受限，请稍后重试'
+    } else if (error.message.includes('存储')) {
+      errorMessage = '存储空间不足或权限不够'
+    } else if (error.message.includes('保存失败')) {
+      errorMessage = error.message
+    }
+    
+    // 在控制台打印保存失败信息
+    console.error('图片保存失败详情:', errorMessage)
+    console.error('错误对象:', error)
   }
 }
 

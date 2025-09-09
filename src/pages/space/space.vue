@@ -10,9 +10,9 @@
         <view class="image-grid">
           <view 
             v-for="(image, index) in userImages" 
-            :key="index" 
+            :key="image.id" 
             class="image-item"
-            @tap="previewImage(image.url)"
+            @tap="previewImage(image)"
           >
             <image 
               :src="image.url" 
@@ -22,6 +22,12 @@
             />
             <view class="image-overlay">
               <text class="image-date">{{ image.date }}</text>
+              <view v-if="image.imageCount > 1" class="image-count">
+                <text class="count-text">{{ image.index }}/{{ image.imageCount }}</text>
+              </view>
+            </view>
+            <view v-if="image.prompt" class="image-prompt">
+              <text class="prompt-text">{{ image.prompt.length > 20 ? image.prompt.substring(0, 20) + '...' : image.prompt }}</text>
             </view>
           </view>
         </view>
@@ -44,6 +50,7 @@
 import { ref, onMounted } from 'vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import TopHeader from '@/components/TopHeader.vue'
+import { imageStorage } from '@/utils/imageStorage.js'
 
 // 响应式数据
 const userImages = ref([])
@@ -105,23 +112,138 @@ onMounted(() => {
   loadUserImages()
 })
 
+// 格式化日期
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 1) {
+    return '今天'
+  } else if (diffDays === 2) {
+    return '昨天'
+  } else if (diffDays <= 7) {
+    return `${diffDays - 1}天前`
+  } else {
+    return date.toLocaleDateString('zh-CN', {
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+}
+
 // 加载用户图片
 const loadUserImages = () => {
-  // 这里应该从后端API获取用户的图片
-  // 暂时使用模拟数据
-  userImages.value = mockImages
+  try {
+    console.log('开始加载本地保存的图片')
+    
+    // 从本地存储获取图片元数据
+    const imageMetadata = imageStorage.getImageMetadata()
+    console.log('获取到的图片元数据:', imageMetadata)
+    
+    // 转换为页面需要的格式
+    userImages.value = imageMetadata.map(item => ({
+      id: item.id,
+      url: item.localPath,
+      originalUrl: item.originalUrl,
+      date: formatDate(item.saveTime),
+      prompt: item.prompt,
+      saveTime: item.saveTime,
+      imageCount: item.imageCount,
+      index: item.index
+    }))
+    
+    console.log('加载的图片数据:', userImages.value)
+    
+    // 如果没有图片，显示空状态
+    if (userImages.value.length === 0) {
+      console.log('没有找到本地保存的图片')
+    }
+    
+  } catch (error) {
+    console.error('加载图片失败:', error)
+    userImages.value = []
+    
+    uni.showToast({
+      title: '加载图片失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
 }
 
 // 预览图片
-const previewImage = (imageUrl) => {
+const previewImage = (image) => {
   if (!userImages.value || !Array.isArray(userImages.value)) {
     console.warn('userImages is not available for preview')
     return
   }
   
-  uni.previewImage({
-    urls: userImages.value.map(img => img.url),
-    current: imageUrl
+  // 显示操作菜单
+  uni.showActionSheet({
+    itemList: ['预览图片', '查看详情', '删除图片'],
+    success: (res) => {
+      switch (res.tapIndex) {
+        case 0:
+          // 预览图片
+          uni.previewImage({
+            urls: userImages.value.map(img => img.url),
+            current: image.url
+          })
+          break
+        case 1:
+          // 查看详情
+          showImageDetails(image)
+          break
+        case 2:
+          // 删除图片
+          deleteImage(image)
+          break
+      }
+    }
+  })
+}
+
+// 显示图片详情
+const showImageDetails = (image) => {
+  const saveTime = new Date(image.saveTime).toLocaleString('zh-CN')
+  const content = `生成时间: ${saveTime}\n提示词: ${image.prompt || '无'}\n图片序号: ${image.index || 1}/${image.imageCount || 1}`
+  
+  uni.showModal({
+    title: '图片详情',
+    content: content,
+    showCancel: false,
+    confirmText: '确定'
+  })
+}
+
+// 删除图片
+const deleteImage = (image) => {
+  uni.showModal({
+    title: '确认删除',
+    content: '确定要删除这张图片吗？此操作不可恢复。',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await imageStorage.deleteImage(image.id)
+          
+          // 重新加载图片列表
+          loadUserImages()
+          
+          uni.showToast({
+            title: '删除成功',
+            icon: 'success'
+          })
+        } catch (error) {
+          console.error('删除图片失败:', error)
+          uni.showToast({
+            title: '删除失败',
+            icon: 'none'
+          })
+        }
+      }
+    }
   })
 }
 
@@ -235,6 +357,7 @@ const handleImageError = (index) => {
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
   padding: 8px;
   display: flex;
+  justify-content: space-between;
   align-items: flex-end;
 }
 
@@ -242,6 +365,34 @@ const handleImageError = (index) => {
   color: white;
   font-size: 10px;
   font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+}
+
+.image-count {
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 2px 6px;
+}
+
+.count-text {
+  color: white;
+  font-size: 9px;
+  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+}
+
+.image-prompt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+  padding: 8px;
+}
+
+.prompt-text {
+  color: white;
+  font-size: 9px;
+  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+  line-height: 1.2;
 }
 
 .empty-state {

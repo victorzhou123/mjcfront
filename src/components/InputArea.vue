@@ -22,7 +22,8 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
+// defineEmits is a compiler macro, no import needed
 
 // 定义 props
 const props = defineProps({

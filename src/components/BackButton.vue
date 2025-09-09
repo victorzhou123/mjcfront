@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+// defineProps and defineEmits are compiler macros, no import needed
 
 // 定义props
 const props = defineProps({

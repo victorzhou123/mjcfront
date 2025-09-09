@@ -1,0 +1,7 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="40" cy="40" r="35" stroke="#ccc" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  <rect x="25" y="25" width="30" height="20" rx="2" stroke="#ccc" stroke-width="2" fill="none"/>
+  <circle cx="30" cy="32" r="3" fill="#ccc"/>
+  <path d="M25 40 L35 30 L45 35 L55 25" stroke="#ccc" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="40" y="60" text-anchor="middle" fill="#999" font-size="8" font-family="Arial">暂无图片</text>
+</svg>
