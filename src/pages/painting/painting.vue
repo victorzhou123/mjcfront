@@ -1,7 +1,7 @@
 <template>
   <view class="painting">
     <!-- 顶部标题栏 -->
-    <TopHeader title="AI绘画" />
+    <TopHeader title="AI绘画" :showClear="true" @clear="clearChatHistory" />
     
     <!-- 主要内容区域 -->
     <view class="auto-wrapper">
@@ -109,6 +109,7 @@ import BottomNavigation from '@/components/BottomNavigation.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import InputArea from '@/components/InputArea.vue'
 import { painter } from '@/utils/painter.js'
+import { storage } from '@/utils/storage.js'
 
 // 响应式数据
 const isGenerating = ref(false)
@@ -150,6 +151,9 @@ const handleGenerate = async (inputText) => {
   
   // 添加用户消息
   userMessages.value.push(userMessage)
+  
+  // 保存用户消息到本地存储
+  saveChatHistory()
   
   // 等待DOM更新后滚动
   await nextTick()
@@ -215,6 +219,9 @@ const handleGenerate = async (inputText) => {
     setTimeout(async () => {
       await scrollToBottom()
     }, 200) // 等待图片渲染
+    
+    // 保存AI回复到本地存储
+    saveChatHistory()
     
     // AI回复完成后聚焦输入框
     await nextTick()
@@ -353,8 +360,77 @@ const handleImageError = (e) => {
 
 // 页面加载时的初始化
 onMounted(() => {
-  // 页面初始状态为空，等待用户输入
+  // 加载历史对话记录
+  loadChatHistory()
 })
+
+// 加载历史对话记录
+const loadChatHistory = () => {
+  try {
+    const chatData = storage.loadChatHistory()
+    
+    if (chatData.userMessages.length > 0 || chatData.aiReplies.length > 0) {
+      userMessages.value = chatData.userMessages
+      aiReplies.value = chatData.aiReplies
+      
+      console.log('已加载历史对话记录:', {
+        userMessages: chatData.userMessages.length,
+        aiReplies: chatData.aiReplies.length
+      })
+      
+      // 加载完成后滚动到底部
+      nextTick(() => {
+        setTimeout(() => {
+          scrollToBottom()
+        }, 100)
+      })
+    }
+  } catch (error) {
+    console.error('加载历史对话记录失败:', error)
+  }
+}
+
+// 保存对话记录到本地存储
+const saveChatHistory = () => {
+  try {
+    storage.saveChatHistory(userMessages.value, aiReplies.value)
+  } catch (error) {
+    console.error('保存对话记录失败:', error)
+  }
+}
+
+// 清除所有对话记录
+const clearChatHistory = () => {
+  uni.showModal({
+    title: '确认清除',
+    content: '确定要清除所有对话记录吗？此操作不可恢复。',
+    success: (res) => {
+      if (res.confirm) {
+        try {
+          // 清除本地存储
+          storage.clearChatHistory()
+          
+          // 清除页面数据
+          userMessages.value = []
+          aiReplies.value = []
+          
+          uni.showToast({
+            title: '对话记录已清除',
+            icon: 'success'
+          })
+          
+          console.log('对话记录已清除')
+        } catch (error) {
+          console.error('清除对话记录失败:', error)
+          uni.showToast({
+            title: '清除失败，请重试',
+            icon: 'none'
+          })
+        }
+      }
+    }
+  })
+}
 </script>
 
 <style scoped>

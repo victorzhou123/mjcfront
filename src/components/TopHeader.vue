@@ -3,8 +3,13 @@
     <view class="frame5"></view>
     <view class="frame6">
       <text class="text">{{ title }}</text>
-      <view v-if="showSettings" class="settings-btn" @click="handleSettingsClick">
-        <image src="/static/settings-gear.svg" class="settings-icon" />
+      <view class="header-buttons">
+        <view v-if="showClear" class="clear-btn" @click="handleClearClick">
+          <image src="/static/delete-icon.svg" class="clear-icon" />
+        </view>
+        <view v-if="showSettings" class="settings-btn" @click="handleSettingsClick">
+          <image src="/static/settings-gear.svg" class="settings-icon" />
+        </view>
       </view>
     </view>
   </view>
@@ -20,14 +25,26 @@ const props = defineProps({
   showSettings: {
     type: Boolean,
     default: false
+  },
+  showClear: {
+    type: Boolean,
+    default: false
   }
 })
+
+// 定义emits
+const emit = defineEmits(['clear'])
 
 // 设置按钮点击事件
 const handleSettingsClick = () => {
   uni.navigateTo({
     url: '/pages/setting/setting'
   })
+}
+
+// 清除按钮点击事件
+const handleClearClick = () => {
+  emit('clear')
 }
 </script>
 
@@ -59,9 +76,16 @@ const handleSettingsClick = () => {
   transform: translateX(-50%);
 }
 
-.settings-btn {
+.header-buttons {
+  display: flex;
+  align-items: center;
   margin-left: auto;
   margin-right: 15px;
+  gap: 8px;
+}
+
+.clear-btn,
+.settings-btn {
   padding: 8px;
   cursor: pointer;
   border-radius: 4px;
@@ -71,8 +95,15 @@ const handleSettingsClick = () => {
   justify-content: center;
 }
 
+.clear-btn:hover,
 .settings-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.clear-icon,
+.settings-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .frame5 {
