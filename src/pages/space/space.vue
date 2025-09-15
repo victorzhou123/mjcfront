@@ -182,7 +182,7 @@ const previewImage = (image) => {
   
   // 显示操作菜单
   uni.showActionSheet({
-    itemList: ['预览图片', '查看详情', '删除图片'],
+    itemList: ['预览图片', '查看详情', '下载图片', '删除图片'],
     success: (res) => {
       switch (res.tapIndex) {
         case 0:
@@ -197,6 +197,10 @@ const previewImage = (image) => {
           showImageDetails(image)
           break
         case 2:
+          // 下载图片
+          downloadImage(image)
+          break
+        case 3:
           // 删除图片
           deleteImage(image)
           break
@@ -216,6 +220,55 @@ const showImageDetails = (image) => {
     showCancel: false,
     confirmText: '确定'
   })
+}
+
+// 保存到相册的通用方法
+const saveToAlbum = (filePath) => {
+  console.log('开始保存图片到相册:', filePath)
+
+  uni.saveImageToPhotosAlbum({
+    filePath: filePath,
+    success: () => {
+      uni.hideLoading()
+      uni.showToast({
+        title: '保存成功',
+        icon: 'success'
+      })
+    },
+    fail: (err) => {
+      uni.hideLoading()
+      console.error('保存图片到相册失败:', err)
+      
+      // 如果是权限问题，提示用户
+      if (err.errMsg && err.errMsg.includes('auth')) {
+        uni.showModal({
+          title: '权限不足',
+          content: '需要相册访问权限才能保存图片，请在设置中开启权限后重试。',
+          showCancel: false,
+          confirmText: '确定'
+        })
+      } else {
+        uni.showToast({
+          title: '保存失败',
+          icon: 'none'
+        })
+      }
+    }
+  })
+
+  console.log('保存图片到相册完成')
+}
+
+// 下载图片到手机相册
+const downloadImage = (image) => {
+  uni.showLoading({
+    title: '保存中...'
+  })
+
+  console.log('开始保存图片:', image)
+  
+  // 直接保存本地文件
+  saveToAlbum(image.url)
 }
 
 // 删除图片
