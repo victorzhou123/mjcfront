@@ -55,58 +55,6 @@ import { imageStorage } from '@/utils/imageStorage.js'
 // 响应式数据
 const userImages = ref([])
 
-// 模拟用户生成的图片数据
-const mockImages = [
-  {
-    url: '/static/WechatIMG100.jpeg',
-    date: '2024-01-15'
-  },
-  {
-    url: '/static/sample1.jpg',
-    date: '2024-01-14'
-  },
-  {
-    url: '/static/sample2.jpg',
-    date: '2024-01-13'
-  },
-  {
-    url: '/static/sample3.jpg',
-    date: '2024-01-12'
-  },
-  {
-    url: '/static/sample4.jpg',
-    date: '2024-01-11'
-  },
-  {
-    url: '/static/sample5.jpg',
-    date: '2024-01-10'
-  },
-  {
-    url: '/static/sample6.jpg',
-    date: '2024-01-09'
-  },
-  {
-    url: '/static/sample7.jpg',
-    date: '2024-01-08'
-  },
-  {
-    url: '/static/sample8.jpg',
-    date: '2024-01-07'
-  },
-  {
-    url: '/static/sample9.jpg',
-    date: '2024-01-06'
-  },
-  {
-    url: '/static/sample10.jpg',
-    date: '2024-01-05'
-  },
-  {
-    url: '/static/sample11.jpg',
-    date: '2024-01-04'
-  }
-]
-
 // 页面加载时获取用户图片
 onMounted(() => {
   loadUserImages()
@@ -182,7 +130,7 @@ const previewImage = (image) => {
   
   // 显示操作菜单
   uni.showActionSheet({
-    itemList: ['预览图片', '查看详情', '下载图片', '删除图片'],
+    itemList: ['预览图片', '查看详情', '保存图片', '删除图片'],
     success: (res) => {
       switch (res.tapIndex) {
         case 0:
@@ -197,7 +145,7 @@ const previewImage = (image) => {
           showImageDetails(image)
           break
         case 2:
-          // 下载图片
+          // 保存图片
           downloadImage(image)
           break
         case 3:
