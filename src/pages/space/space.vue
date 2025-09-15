@@ -51,6 +51,7 @@ import { ref, onMounted } from 'vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import { imageStorage } from '@/utils/imageStorage.js'
+import { showImageActionSheet } from '@/utils/imageActions.js'
 
 // 响应式数据
 const userImages = ref([])
@@ -123,154 +124,9 @@ const loadUserImages = () => {
 
 // 预览图片
 const previewImage = (image) => {
-  if (!userImages.value || !Array.isArray(userImages.value)) {
-    console.warn('userImages is not available for preview')
-    return
-  }
-  
-  // 显示操作菜单
-  uni.showActionSheet({
-    itemList: ['预览图片', '查看详情', '保存图片', '删除图片'],
-    success: (res) => {
-      switch (res.tapIndex) {
-        case 0:
-          // 预览图片
-          uni.previewImage({
-            urls: userImages.value.map(img => img.url),
-            current: image.url
-          })
-          break
-        case 1:
-          // 查看详情
-          showImageDetails(image)
-          break
-        case 2:
-          // 保存图片
-          downloadImage(image)
-          break
-        case 3:
-          // 删除图片
-          deleteImage(image)
-          break
-      }
-    }
-  })
-}
-
-// 显示图片详情
-const showImageDetails = (image) => {
-  const saveTime = new Date(image.saveTime).toLocaleString('zh-CN')
-  const content = `生成时间: ${saveTime}\n提示词: ${image.prompt || '无'}\n图片序号: ${image.index || 1}/${image.imageCount || 1}`
-  
-  uni.showModal({
-    title: '图片详情',
-    content: content,
-    showCancel: false,
-    confirmText: '确定'
-  })
-}
-
-// 保存到相册的通用方法
-const saveToAlbum = (filePath) => {
-  console.log('开始保存图片到相册:', filePath)
-  uni.saveImageToPhotosAlbum({
-    filePath: filePath,
-    success: () => {
-      uni.showToast({
-        title: '保存成功',
-        icon: 'success'
-      })
-    },
-    fail: (err) => {
-      console.error('保存图片到相册失败:', err)
-      // 判断是否是权限问题
-      if (err.errMsg.includes('auth deny') || err.errMsg.includes('auth denied')) {
-        uni.showModal({
-          title: '权限提示',
-          content: '需要您的相册访问权限才能保存图片，请在设置中开启。',
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              uni.openSetting({
-                success(settingdata) {
-                  console.log(settingdata)
-                  if (settingdata.authSetting['scope.writePhotosAlbum']) {
-                    console.log('获取权限成功，再次保存')
-                    uni.saveImageToPhotosAlbum({
-                      filePath: filePath,
-                      success: () => {
-                        uni.showToast({
-                          title: '保存成功',
-                          icon: 'success'
-                        })
-                      },
-                      fail: (saveErr) => {
-                        console.error('再次保存失败:', saveErr)
-                        uni.showToast({
-                          title: '保存失败',
-                          icon: 'none'
-                        })
-                      }
-                    })
-                  } else {
-                    console.log('获取权限失败')
-                    uni.showToast({
-                      title: '您未授权，无法保存',
-                      icon: 'none'
-                    })
-                  }
-                }
-              })
-            }
-          }
-        })
-      } else {
-        uni.showToast({
-          title: '保存失败',
-          icon: 'none'
-        })
-      }
-    }
-  })
-}
-
-// 下载图片到手机相册
-const downloadImage = (image) => {
-  uni.showLoading({
-    title: '保存中...'
-  })
-
-  console.log('开始保存图片:', image)
-  
-  // 直接保存本地文件
-  saveToAlbum(image.url)
-}
-
-// 删除图片
-const deleteImage = (image) => {
-  uni.showModal({
-    title: '确认删除',
-    content: '确定要删除这张图片吗？此操作不可恢复。',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await imageStorage.deleteImage(image.id)
-          
-          // 重新加载图片列表
-          loadUserImages()
-          
-          uni.showToast({
-            title: '删除成功',
-            icon: 'success'
-          })
-        } catch (error) {
-          console.error('删除图片失败:', error)
-          uni.showToast({
-            title: '删除失败',
-            icon: 'none'
-          })
-        }
-      }
-    }
+  showImageActionSheet(image, userImages.value, () => {
+    // 删除成功后的回调
+    loadUserImages()
   })
 }
 

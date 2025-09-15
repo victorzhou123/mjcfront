@@ -81,6 +81,7 @@
             class="preview-image" 
             mode="aspectFit"
             @tap.stop
+            @longpress="handlePreviewImageLongPress"
           />
         </view>
         
@@ -111,6 +112,7 @@ import InputArea from '@/components/InputArea.vue'
 import { painter } from '@/utils/painter.js'
 import { storage } from '@/utils/storage.js'
 import { imageStorage } from '@/utils/imageStorage.js'
+import { showImageActionSheet } from '@/utils/imageActions.js'
 
 // 响应式数据
 const isGenerating = ref(false)
@@ -303,6 +305,13 @@ const switchImage = (direction) => {
     currentImageIndex.value = currentImageIndex.value > 0 ? currentImageIndex.value - 1 : previewImages.value.length - 1
   } else {
     currentImageIndex.value = currentImageIndex.value < previewImages.value.length - 1 ? currentImageIndex.value + 1 : 0
+  }
+}
+
+const handlePreviewImageLongPress = () => {
+  const currentImage = previewImages.value[currentImageIndex.value]
+  if (currentImage) {
+    showImageActionSheet({ url: currentImage }, [], null, { fromPreview: true })
   }
 }
 
