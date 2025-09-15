@@ -1,0 +1,366 @@
+# 登入
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /v1/auth/login:
+    post:
+      summary: 登入
+      deprecated: false
+      description: ''
+      tags:
+        - 登入相关
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                udid:
+                  type: string
+                  title: 设备ID
+                origin_transaction_id:
+                  type: string
+                  title: 订单ID
+              required:
+                - udid
+                - origin_transaction_id
+              x-apifox-orders:
+                - udid
+                - origin_transaction_id
+            example:
+              udid: cc71db73-9a78-4a9a-85c5-085075f287a3
+              transaction_id: '2000000990568933'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        title: token
+                      refresh_token:
+                        type: string
+                        title: 刷新token
+                      access_expires_at:
+                        type: integer
+                        title: token过期时间
+                        x-apifox-mock: '{{$date.timestamp}}'
+                      refresh_expires_at:
+                        type: integer
+                        title: 刷新token过期时间
+                        x-apifox-mock: '{{$date.timestamp}}'
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            title: ID
+                          name:
+                            type: string
+                            title: 用户名
+                          status:
+                            type: integer
+                            title: 状态
+                          uuid:
+                            type: string
+                            title: 用户唯一ID
+                          vip:
+                            type: integer
+                            title: vip 等级
+                            enum:
+                              - 0
+                              - 1
+                              - 2
+                              - 3
+                              - 4
+                            x-apifox-enum:
+                              - value: 0
+                                name: 无会员
+                                description: ''
+                              - value: 1
+                                name: 周会员
+                                description: ''
+                              - value: 2
+                                name: 月会员
+                                description: ''
+                              - value: 3
+                                name: 季会员
+                                description: ''
+                              - value: 4
+                                name: 年会员
+                                description: ''
+                          vip_expired_time:
+                            type: integer
+                            title: vip 过期时间
+                            x-apifox-mock: '{{$date.millisecondsTimestamp}}'
+                        required:
+                          - id
+                          - name
+                          - status
+                          - uuid
+                          - vip
+                          - vip_expired_time
+                        title: 用户信息
+                        x-apifox-orders:
+                          - id
+                          - name
+                          - status
+                          - uuid
+                          - vip
+                          - vip_expired_time
+                    required:
+                      - token
+                      - refresh_token
+                      - access_expires_at
+                      - refresh_expires_at
+                      - user
+                    x-apifox-orders:
+                      - token
+                      - refresh_token
+                      - access_expires_at
+                      - refresh_expires_at
+                      - user
+                  code:
+                    type: integer
+                    x-apifox-mock: '200000'
+                required:
+                  - message
+                  - data
+                  - code
+                x-apifox-orders:
+                  - message
+                  - data
+                  - code
+              example:
+                message: 操作成功！
+                data:
+                  token: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwic3ViIjoiY2M3MWRiNzMtOWE3OC00YTlhLTg1YzUtMDg1MDc1ZjI4N2EzIiwiZXhwIjoxNzU1NDg2Mjk2LCJuYmYiOjE3NTU0ODI2OTYsImlhdCI6MTc1NTQ4MjY5NiwianRpIjoiODRmNGU5OWEtZTYxNS00MmUyLTljYmItMDlkZjZlMjBiNmU0In0.Z6Eg9bEG-_jHV3ee_qOCwo1RhqXxSbWw_R3ELTExCNc
+                  refresh_token: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImNjNzFkYjczLTlhNzgtNGE5YS04NWM1LTA4NTA3NWYyODdhMyIsImV4cCI6MTc1NjA4NzQ5NiwibmJmIjoxNzU1NDgyNjk2LCJpYXQiOjE3NTU0ODI2OTYsImp0aSI6Ijg0ZjRlOTlhLWU2MTUtNDJlMi05Y2JiLTA5ZGY2ZTIwYjZlNCJ9.FF-X03saUG0juElvK4lXfQ0owBa0N2CMYla5FCQPxzc
+                  access_expires_at: 1755486296
+                  refresh_expires_at: 1756087496
+                  user:
+                    id: 14
+                    name: C3hkN7by
+                    status: 0
+                    uuid: cc71db73-9a78-4a9a-85c5-085075f287a3
+                    vip: 0
+                    vip_expired_time: 0
+                code: 200000
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 登入相关
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-347371356-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers:
+  - url: ''
+    description: 云端 Mock
+security: []
+
+```
+
+# 刷新 token
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /v1/auth/refresh-token:
+    post:
+      summary: 刷新 token
+      deprecated: false
+      description: ''
+      tags:
+        - 登入相关
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  title: 刷新token
+                  description: 请注意使用的是刷新 token
+              required:
+                - refresh_token
+              x-apifox-orders:
+                - refresh_token
+            example:
+              refresh_token: >-
+                eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImNjNzFkYjczLTlhNzgtNGE5YS04NWM1LTA4NTA3NWYyODdhMyIsImV4cCI6MTc1NjA5MzA4MSwibmJmIjoxNzU1NDg4MjgxLCJpYXQiOjE3NTU0ODgyODEsImp0aSI6ImFkNGNlOGUxLTEzZTQtNDhjMC1iMjEwLTU0MmMyNTdkNThiZSJ9.ekDnVFO8vYk3oP0mcl_l_WOnHYdRlZSTzs8hH5DWLsM
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        title: token
+                      refresh_token:
+                        type: string
+                        title: 刷新token
+                      access_expires_at:
+                        type: integer
+                        title: token过期时间
+                      refresh_expires_at:
+                        type: integer
+                        title: 刷新token过期时间
+                    required:
+                      - token
+                      - refresh_token
+                      - access_expires_at
+                      - refresh_expires_at
+                    x-apifox-orders:
+                      - token
+                      - refresh_token
+                      - access_expires_at
+                      - refresh_expires_at
+                  code:
+                    type: integer
+                required:
+                  - message
+                  - data
+                  - code
+                x-apifox-orders:
+                  - message
+                  - data
+                  - code
+              example:
+                message: 操作成功！
+                data:
+                  token: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwic3ViIjoiY2M3MWRiNzMtOWE3OC00YTlhLTg1YzUtMDg1MDc1ZjI4N2EzIiwiZXhwIjoxNzU1NDkxODgxLCJuYmYiOjE3NTU0ODgyODEsImlhdCI6MTc1NTQ4ODI4MSwianRpIjoiYWQ0Y2U4ZTEtMTNlNC00OGMwLWIyMTAtNTQyYzI1N2Q1OGJlIn0.PNr-nCZHDUvU4f19TSWWuXlzqxKrX_znqrNlFaKDMPI
+                  refresh_token: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsInN1YiI6ImNjNzFkYjczLTlhNzgtNGE5YS04NWM1LTA4NTA3NWYyODdhMyIsImV4cCI6MTc1NjA5MzA4MSwibmJmIjoxNzU1NDg4MjgxLCJpYXQiOjE3NTU0ODgyODEsImp0aSI6ImFkNGNlOGUxLTEzZTQtNDhjMC1iMjEwLTU0MmMyNTdkNThiZSJ9.ekDnVFO8vYk3oP0mcl_l_WOnHYdRlZSTzs8hH5DWLsM
+                  access_expires_at: 1755491881
+                  refresh_expires_at: 1756093081
+                code: 200000
+          headers: {}
+          x-apifox-name: 成功
+      security:
+        - bearer: []
+      x-apifox-folder: 登入相关
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-347371357-run
+components:
+  schemas: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers:
+  - url: ''
+    description: 云端 Mock
+security: []
+
+```
