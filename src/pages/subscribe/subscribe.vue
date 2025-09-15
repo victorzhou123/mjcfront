@@ -75,7 +75,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import BackButton from '@/components/BackButton.vue'
-import { IAP_PRODUCTS, iapManager } from '@/utils/ipa.js'
+import { IAP_PRODUCTS, iapManager } from '@/utils/iap.js'
 
 // 会员套餐选择状态
 const selectedPlan = ref('yearly') // 默认选中年度会员
