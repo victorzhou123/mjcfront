@@ -413,12 +413,6 @@ const saveImagesToLocal = async (imageUrls, prompt) => {
   try {
     console.log('开始保存图片到本地:', imageUrls)
     
-    // 显示保存进度提示
-    uni.showLoading({
-      title: '正在保存图片...',
-      mask: true
-    })
-    
     // 准备图片元数据
     const metadata = {
       prompt: prompt, // 用户输入的提示词
@@ -431,21 +425,8 @@ const saveImagesToLocal = async (imageUrls, prompt) => {
     
     console.log('图片保存成功:', savedPaths)
     
-    // 隐藏加载提示
-    uni.hideLoading()
-    
-    // 显示保存成功提示
-    uni.showToast({
-      title: `${imageUrls.length}张图片已保存`,
-      icon: 'success',
-      duration: 2000
-    })
-    
   } catch (error) {
     console.error('保存图片失败:', error)
-    
-    // 隐藏加载提示
-    uni.hideLoading()
     
     // 处理部分成功的情况
     if (error.partialSuccess && error.savedPaths && error.savedPaths.length > 0) {
