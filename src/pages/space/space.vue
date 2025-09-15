@@ -225,27 +225,55 @@ const showImageDetails = (image) => {
 // 保存到相册的通用方法
 const saveToAlbum = (filePath) => {
   console.log('开始保存图片到相册:', filePath)
-
   uni.saveImageToPhotosAlbum({
     filePath: filePath,
     success: () => {
-      uni.hideLoading()
       uni.showToast({
         title: '保存成功',
         icon: 'success'
       })
     },
     fail: (err) => {
-      uni.hideLoading()
       console.error('保存图片到相册失败:', err)
-      
-      // 如果是权限问题，提示用户
-      if (err.errMsg && err.errMsg.includes('auth')) {
+      // 判断是否是权限问题
+      if (err.errMsg.includes('auth deny') || err.errMsg.includes('auth denied')) {
         uni.showModal({
-          title: '权限不足',
-          content: '需要相册访问权限才能保存图片，请在设置中开启权限后重试。',
-          showCancel: false,
-          confirmText: '确定'
+          title: '权限提示',
+          content: '需要您的相册访问权限才能保存图片，请在设置中开启。',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              uni.openSetting({
+                success(settingdata) {
+                  console.log(settingdata)
+                  if (settingdata.authSetting['scope.writePhotosAlbum']) {
+                    console.log('获取权限成功，再次保存')
+                    uni.saveImageToPhotosAlbum({
+                      filePath: filePath,
+                      success: () => {
+                        uni.showToast({
+                          title: '保存成功',
+                          icon: 'success'
+                        })
+                      },
+                      fail: (saveErr) => {
+                        console.error('再次保存失败:', saveErr)
+                        uni.showToast({
+                          title: '保存失败',
+                          icon: 'none'
+                        })
+                      }
+                    })
+                  } else {
+                    console.log('获取权限失败')
+                    uni.showToast({
+                      title: '您未授权，无法保存',
+                      icon: 'none'
+                    })
+                  }
+                }
+              })
+            }
+          }
         })
       } else {
         uni.showToast({
@@ -255,8 +283,6 @@ const saveToAlbum = (filePath) => {
       }
     }
   })
-
-  console.log('保存图片到相册完成')
 }
 
 // 下载图片到手机相册
