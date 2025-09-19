@@ -364,3 +364,238 @@ servers:
 security: []
 
 ```
+
+# 获取商业化配置文件
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /v1/products:
+    get:
+      summary: 获取商业化配置文件
+      deprecated: false
+      description: ''
+      tags:
+        - 商业化
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              title: 订阅ID
+                            product_id:
+                              type: string
+                              title: 订阅ID
+                            group_id:
+                              type: string
+                              title: 组ID
+                            type:
+                              type: integer
+                              title: 类型
+                              enum:
+                                - 1
+                                - 2
+                              x-apifox-enum:
+                                - value: 1
+                                  name: 订阅类型
+                                  description: ''
+                                - value: 2
+                                  name: 消耗品
+                                  description: ''
+                            name:
+                              type: string
+                              title: 套餐名称
+                            desc:
+                              type: string
+                              title: 套餐描述
+                            price:
+                              type: string
+                              title: 价格
+                            fake_price:
+                              type: string
+                              title: 假价格
+                              description: 低至xx
+                            discount:
+                              type: integer
+                              title: 折扣
+                            discount_price:
+                              type: string
+                              title: 折扣价
+                            level:
+                              type: integer
+                              title: 等级
+                            points:
+                              type: integer
+                              title: 积分数
+                          required:
+                            - id
+                            - product_id
+                            - group_id
+                            - type
+                            - name
+                            - desc
+                            - price
+                            - fake_price
+                            - discount
+                            - discount_price
+                            - level
+                            - points
+                          x-apifox-orders:
+                            - id
+                            - product_id
+                            - group_id
+                            - type
+                            - name
+                            - desc
+                            - price
+                            - fake_price
+                            - discount
+                            - discount_price
+                            - level
+                            - points
+                        title: 订阅
+                    required:
+                      - subscriptions
+                    x-apifox-orders:
+                      - subscriptions
+                  code:
+                    type: integer
+                required:
+                  - message
+                  - data
+                  - code
+                x-apifox-orders:
+                  - message
+                  - data
+                  - code
+              example:
+                message: 操作成功！
+                data:
+                  subscriptions:
+                    - id: 1
+                      product_id: mjc.vip.year
+                      group_id: '1'
+                      type: 1
+                      name: 年度会员
+                      desc: 年度会员
+                      price: '498.00'
+                      fake_price: '1.30'
+                      discount: 0
+                      discount_price: '0.00'
+                      level: 4
+                      points: 0
+                    - id: 2
+                      product_id: mjc.vip.quarter
+                      group_id: '1'
+                      type: 1
+                      name: 季度会员
+                      desc: 季度会员
+                      price: '168.00'
+                      fake_price: '1.80'
+                      discount: 0
+                      discount_price: '0.00'
+                      level: 3
+                      points: 0
+                    - id: 3
+                      product_id: mjc.vip.month
+                      group_id: '1'
+                      type: 1
+                      name: 月费会员
+                      desc: 月费会员
+                      price: '78.00'
+                      fake_price: '2.50'
+                      discount: 0
+                      discount_price: '0.00'
+                      level: 2
+                      points: 0
+                    - id: 4
+                      product_id: mjc.vip.week
+                      group_id: '1'
+                      type: 1
+                      name: 周费会员
+                      desc: 周费会员
+                      price: '38.00'
+                      fake_price: '5.40'
+                      discount: 0
+                      discount_price: '0.00'
+                      level: 1
+                      points: 0
+                code: 200000
+          headers: {}
+          x-apifox-name: 成功
+      security:
+        - bearer: []
+      x-apifox-folder: 商业化
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-342175205-run
+components:
+  schemas: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers:
+  - url: http://interstellar.a22t.com
+    description: 测试环境
+security: []
+
+```

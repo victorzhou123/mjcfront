@@ -36,9 +36,9 @@
           :class="{ selected: selectedPlan === plan.key }" 
           @click="selectPlan(plan.key)"
         >
-          <div class="text3">{{ plan.title }}</div>
-          <div class="price">¥ {{ plan.priceNum }}</div>
-          <div class="text4">¥ {{ plan.perDay }} / 天</div>
+          <div class="text3">{{ plan.name }}</div>
+          <div class="price">¥ {{ plan.price }}</div>
+          <div class="text4">¥ {{ plan.fake_price }} / 天</div>
         </div>
       </div>
       <div class="frame575">
@@ -49,9 +49,9 @@
           :class="{ selected: selectedPlan === plan.key }" 
           @click="selectPlan(plan.key)"
         >
-          <div class="text3">{{ plan.title }}</div>
-          <div class="price">¥ {{ plan.priceNum }}</div>
-          <div class="text4">¥ {{ plan.perDay }} / 天</div>
+          <div class="text3">{{ plan.name }}</div>
+          <div class="price">¥ {{ plan.price }}</div>
+          <div class="text4">¥ {{ plan.fake_price }} / 天</div>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import BackButton from '@/components/BackButton.vue'
-import { IAP_PRODUCTS, iapManager } from '@/utils/iap.js'
+import { iapManager } from '@/utils/iap.js'
 
 // 会员套餐选择状态
 const selectedPlan = ref('yearly') // 默认选中年度会员
@@ -92,11 +92,13 @@ const planData = computed(() => {
     { key: 'monthly', productId: 'mjc.vip.month' },
     { key: 'weekly', productId: 'mjc.vip.week' }
   ]
-  
-  return plans.map(plan => ({
+
+  const planDa = plans.map(plan => ({
     ...plan,
-    ...IAP_PRODUCTS[plan.productId]
+    ...iapManager.products.find(p => p.product_id === plan.productId)
   }))
+
+  return planDa
 })
 
 // 会员套餐选择
@@ -130,9 +132,6 @@ const subscribe = async () => {
       title: '正在处理订阅...',
       mask: true
     })
-    
-    // 初始化IAP管理器
-    await iapManager.init()
     
     // 调用购买产品方法
     const result = await iapManager.purchaseProduct(currentPlan.productId)
@@ -171,8 +170,6 @@ const restorePurchase = async () => {
   })
   
   try {
-    await iapManager.init()
-    
     const res = await iapManager.restoreTransactions()
     if (res.success) {
       uni.showToast({ title: '恢复购买成功', icon: 'success' });
@@ -187,6 +184,7 @@ const restorePurchase = async () => {
     isRestoring.value = false
   }
 }
+
 </script>
 
 <style scoped>

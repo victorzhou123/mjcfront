@@ -1,6 +1,7 @@
 <script>
 import { baseComponent } from '@/utils/base.js'
 import { user } from '@/utils/user.js'
+import { iapManager } from '@/utils/iap.js'
 
 export default {
   onLaunch: async function () {
@@ -23,6 +24,14 @@ export default {
 
     console.log('transactionId', user.transactionId)
     console.log('uuid', user.uuid)
+
+    // iap初始化
+    try {
+      await iapManager.init()
+      console.log('IAP初始化成功')
+    } catch (err) {
+      console.error('IAP初始化失败:', err)
+    }
   },
   onShow: function () {
     console.log('App Show')

@@ -1,45 +1,12 @@
 import { baseComponent } from './base.js';
 
-export const IAP_PRODUCTS = {
-    'mjc.vip.year': {
-        productId: 'mjc.vip.year',
-        price: '¥498',
-        priceNum: 498,
-        perDay: 1.3,
-        title: '年度会员',
-        description: '年度会员'
-    },
-    'mjc.vip.quarter': {
-        productId: 'mjc.vip.quarter',
-        price: '¥168',
-        priceNum: 168,
-        perDay: 1.8,
-        title: '季度会员',
-        description: '季度会员'
-    },
-    'mjc.vip.month': {
-        productId: 'mjc.vip.month',
-        price: '¥78',
-        priceNum: 78,
-        perDay: 2.5,
-        title: '月费会员',
-        description: '月费会员'
-    },
-    'mjc.vip.week': {
-        productId: 'mjc.vip.week',
-        price: '¥38',
-        priceNum: 38,
-        perDay: 5.4,
-        title: '周费会员',
-        description: '周费会员'
-    }
-}
-
 class IAPManager {
     constructor() {
         this.channel = null;
         this.isInit = false;
         this.initError = null;
+        this.products = [];
+        this.baseUrl = "http://interstellar.a22t.com"
     }
 
     async init() {
@@ -53,27 +20,40 @@ class IAPManager {
 
         this.channel = baseComponent.channel
 
-        await this.getProducts();
+        // 从服务器获取商品列表
+        await this.getProductsFromServer();
 
         this.isInit = true;
 
         console.log('IAP初始化完成');
     }
 
-    async getProducts(productIds) {
-        console.log('开始获取iap商品列表');
-        return new Promise((resolve, reject) => {
-        this.channel.requestProduct(productIds || Object.keys(IAP_PRODUCTS), (res) => {
-            // 打印商品列表
-            console.log('获取到的商品列表:', res);
-            this.products = res;
-            resolve(res);
-        }, (err) => {
-            // 打印错误信息
-            console.error('获取商品列表失败:', err);
-            reject(err);
-        })
-        });
+    async getProductsFromServer() {
+        console.log('开始从服务器获取商品列表');
+        try {
+            const response = await uni.request({
+                url: `${this.baseUrl}/v1/products`,
+                method: 'GET',
+                header: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+                    'CLIENT-UDID': uni.getStorageSync('udid') || '',
+                    'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
+                    'CLIENT-VERSION': '1.0.0',
+                    'ACCEPT-LANGUAGE': 'zh-CN'
+                }
+            });
+
+            if (response.data && response.data.code === 200000) {
+                this.products = response.data.data.subscriptions;
+                console.log('获取到的商品列表:', this.products);
+                return this.products;
+            } else {
+                throw new Error(response.data?.message || '获取商品列表失败');
+            }
+        } catch (error) {
+            console.error('获取商品列表失败:', error);
+            throw error;
+        }
     }
 
     async purchaseProduct(productId) {
@@ -85,7 +65,7 @@ class IAPManager {
         }
         
         // 查找产品信息
-        const product = this.products.find(p => p.productid === productId) || IAP_PRODUCTS[productId];
+        const product = this.products.find(p => p.product_id === productId);
         if (!product) {
             throw new Error(`未找到产品: ${productId}`);
         }
@@ -190,6 +170,41 @@ class IAPManager {
             success: false,
             error: error
         };
+        }
+    }
+
+    /**
+     * 后端校验购买
+     */
+    async serverCheckPurchase(productId) {
+        console.log('开始后端校验购买:', productId);
+        try {
+            const response = await uni.request({
+                url: '/v1/purchase/verify',
+                method: 'POST',
+                header: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+                    'CLIENT-UDID': uni.getStorageSync('udid') || '',
+                    'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
+                    'CLIENT-VERSION': '1.0.0',
+                    'ACCEPT-LANGUAGE': 'zh-CN',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    product_id: productId
+                }
+            });
+
+            if (response.data && response.data.code === 200000) {
+                console.log('后端校验成功:', response.data);
+                return { success: true, data: response.data.data };
+            } else {
+                console.error('后端校验失败:', response.data);
+                return { success: false, message: response.data?.message || '校验失败' };
+            }
+        } catch (error) {
+            console.error('后端校验请求失败:', error);
+            return { success: false, message: '网络请求失败' };
         }
     }
 
