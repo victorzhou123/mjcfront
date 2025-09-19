@@ -21,7 +21,9 @@ class IAPManager {
         this.channel = baseComponent.channel
 
         // 从服务器获取商品列表
-        await this.getProductsFromServer();
+        if (!this.products.length) {
+            await this.getProductsFromServer();
+        }
 
         this.isInit = true;
 

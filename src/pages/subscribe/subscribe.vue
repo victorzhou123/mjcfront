@@ -1,79 +1,90 @@
 <template>
   <div class="subscribe">
-    <!-- 返回按钮 -->
-    <BackButton icon-src="/static/mezlhoga-cuvmu7v.svg" default-route="/pages/setting/setting" />
-    
-    <!-- 标题 -->
-    <div class="text">解锁以下全部功能</div>
-    
-    <!-- 功能图标区域 -->
-    <div class="frame561">
-      <div class="frame558">
-        <image src="/static/mezlhoga-u3wpw94.svg" class="vip-line1" />
-        <div class="text2">快速通道</div>
-      </div>
-      <div class="frame558">
-        <div class="vip-line12">
-          <image src="/static/mezlhoga-n8hj0kb.svg" class="icon" />
-        </div>
-        <div class="text2">海量绘画次数</div>
-      </div>
-      <div class="frame558">
-        <div class="vip-line12">
-          <image src="/static/mezlhoga-x0f1cdk.svg" class="icon" />
-        </div>
-        <div class="text2">云端存储</div>
+    <!-- 页面准备状态加载遮罩 -->
+    <div v-if="!ready" class="page-loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载页面...</div>
       </div>
     </div>
     
-    <!-- 会员套餐区域 -->
-    <div class="frame572">
-      <div class="frame575">
-        <div 
-          v-for="(plan, index) in planData.slice(0, 2)" 
-          :key="plan.key"
-          class="frame566" 
-          :class="{ selected: selectedPlan === plan.key }" 
-          @click="selectPlan(plan.key)"
-        >
-          <div class="text3">{{ plan.name }}</div>
-          <div class="price">¥ {{ plan.price }}</div>
-          <div class="text4">¥ {{ plan.fake_price }} / 天</div>
+    <!-- 页面内容 - 只有当ready为true时才显示 -->
+    <template v-if="ready">
+      <!-- 返回按钮 -->
+      <BackButton icon-src="/static/mezlhoga-cuvmu7v.svg" default-route="/pages/setting/setting" />
+      
+      <!-- 标题 -->
+      <div class="text">解锁以下全部功能</div>
+      
+      <!-- 功能图标区域 -->
+      <div class="frame561">
+        <div class="frame558">
+          <image src="/static/mezlhoga-u3wpw94.svg" class="vip-line1" />
+          <div class="text2">快速通道</div>
+        </div>
+        <div class="frame558">
+          <div class="vip-line12">
+            <image src="/static/mezlhoga-n8hj0kb.svg" class="icon" />
+          </div>
+          <div class="text2">海量绘画次数</div>
+        </div>
+        <div class="frame558">
+          <div class="vip-line12">
+            <image src="/static/mezlhoga-x0f1cdk.svg" class="icon" />
+          </div>
+          <div class="text2">云端存储</div>
         </div>
       </div>
-      <div class="frame575">
-        <div 
-          v-for="(plan, index) in planData.slice(2, 4)" 
-          :key="plan.key"
-          class="frame566" 
-          :class="{ selected: selectedPlan === plan.key }" 
-          @click="selectPlan(plan.key)"
-        >
-          <div class="text3">{{ plan.name }}</div>
-          <div class="price">¥ {{ plan.price }}</div>
-          <div class="text4">¥ {{ plan.fake_price }} / 天</div>
+      
+      <!-- 会员套餐区域 -->
+      <div class="frame572">
+        <div class="frame575">
+          <div 
+            v-for="(plan, index) in planData.slice(0, 2)" 
+            :key="plan.key"
+            class="frame566" 
+            :class="{ selected: selectedPlan === plan.key }" 
+            @click="selectPlan(plan.key)"
+          >
+            <div class="text3">{{ plan.name }}</div>
+            <div class="price">¥ {{ plan.price }}</div>
+            <div class="text4">¥ {{ plan.fake_price }} / 天</div>
+          </div>
+        </div>
+        <div class="frame575">
+          <div 
+            v-for="(plan, index) in planData.slice(2, 4)" 
+            :key="plan.key"
+            class="frame566" 
+            :class="{ selected: selectedPlan === plan.key }" 
+            @click="selectPlan(plan.key)"
+          >
+            <div class="text3">{{ plan.name }}</div>
+            <div class="price">¥ {{ plan.price }}</div>
+            <div class="text4">¥ {{ plan.fake_price }} / 天</div>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- 底部订阅按钮区域 -->
-    <div class="frame576">
-      <div class="frame574">
-        <div class="frame573" 
+      
+      <!-- 底部订阅按钮区域 -->
+      <div class="frame576">
+        <div class="frame574">
+          <div class="frame573" 
+               :class="{ disabled: isSubscribing || isRestoring }"
+               @click="!isSubscribing && !isRestoring && subscribe()">
+            <div class="text3">{{ isSubscribing ? '订阅中...' : '立即订阅' }}</div>
+          </div>
+        </div>
+        <div class="text5" 
              :class="{ disabled: isSubscribing || isRestoring }"
-             @click="!isSubscribing && !isRestoring && subscribe()">
-          <div class="text3">{{ isSubscribing ? '订阅中...' : '立即订阅' }}</div>
-        </div>
+             @click="!isSubscribing && !isRestoring && restorePurchase()">{{ isRestoring ? '恢复中...' : '恢复购买' }}</div>
       </div>
-      <div class="text5" 
-           :class="{ disabled: isSubscribing || isRestoring }"
-           @click="!isSubscribing && !isRestoring && restorePurchase()">{{ isRestoring ? '恢复中...' : '恢复购买' }}</div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import BackButton from '@/components/BackButton.vue'
 import { iapManager } from '@/utils/iap.js'
 
@@ -83,23 +94,79 @@ const selectedPlan = ref('yearly') // 默认选中年度会员
 // 加载状态
 const isRestoring = ref(false)
 const isSubscribing = ref(false)
+const isIapInitializing = ref(true) // IAP初始化状态
+const ready = ref(false) // 页面准备状态
+
+// 检查IAP初始化状态的定时器
+let checkIapTimer = null
+
+// 循环检查IAP初始化状态
+const checkIapInitStatus = async () => {
+  console.log('检查IAP初始化状态:', iapManager.isInit)
+  
+  if (iapManager.isInit) {
+    isIapInitializing.value = false
+    
+    // 加载套餐数据
+    await loadPlanData()
+    
+    ready.value = true // 当IAP初始化完成且套餐数据加载完成时，设置页面为准备状态
+    if (checkIapTimer) {
+      clearInterval(checkIapTimer)
+      checkIapTimer = null
+    }
+    console.log('IAP初始化完成，套餐数据加载完成，页面准备就绪')
+  }
+}
+
+// 组件挂载时开始检查
+onMounted(() => {
+  console.log('开始循环检查IAP初始化状态')
+  // 立即检查一次
+  checkIapInitStatus()
+  
+  // 如果还未初始化，开始定时检查
+  if (!iapManager.isInit) {
+    checkIapTimer = setInterval(checkIapInitStatus, 500) // 每500ms检查一次
+  }
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (checkIapTimer) {
+    clearInterval(checkIapTimer)
+    checkIapTimer = null
+  }
+})
 
 // 会员套餐数据
-const planData = computed(() => {
-  const plans = [
-    { key: 'yearly', productId: 'mjc.vip.year' },
-    { key: 'quarterly', productId: 'mjc.vip.quarter' },
-    { key: 'monthly', productId: 'mjc.vip.month' },
-    { key: 'weekly', productId: 'mjc.vip.week' }
-  ]
+const planData = ref([])
 
-  const planDa = plans.map(plan => ({
-    ...plan,
-    ...iapManager.products.find(p => p.product_id === plan.productId)
-  }))
+// 加载套餐数据的异步函数
+const loadPlanData = async () => {
+  try {
+    const plans = [
+      { key: 'yearly', productId: 'mjc.vip.year' },
+      { key: 'quarterly', productId: 'mjc.vip.quarter' },
+      { key: 'monthly', productId: 'mjc.vip.month' },
+      { key: 'weekly', productId: 'mjc.vip.week' }
+    ]
 
-  return planDa
-})
+    const products = await iapManager.getProductsFromServer()
+    console.log('product list:', products)
+
+    const planDa = plans.map(plan => ({
+      ...plan,
+      ...products.find(p => p.product_id === plan.productId)
+    }))
+
+    planData.value = planDa
+    console.log('套餐数据加载完成:', planDa)
+  } catch (error) {
+    console.error('加载套餐数据失败:', error)
+    planData.value = []
+  }
+}
 
 // 会员套餐选择
 const selectPlan = (plan) => {
@@ -560,6 +627,50 @@ const restorePurchase = async () => {
   .text3 {
     font-size: 22px;
   }
+}
+
+/* 页面准备状态全屏加载样式 */
+.page-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(244, 240, 235, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 130, 12, 0.3);
+  border-top: 4px solid #ff820c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #000000;
+  font-family: "SF Pro", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  text-align: center;
 }
 
 /* 禁用状态样式 */
