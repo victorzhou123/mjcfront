@@ -200,14 +200,68 @@ const subscribe = async () => {
       mask: true
     })
     
-    // 调用购买产品方法
-    const result = await iapManager.purchaseProduct(currentPlan.productId)
+    // 检查产品信息和用户信息
+    const result = await iapManager.checkProduct(currentPlan.productId) 
     
-    console.log('订阅成功:', result)
-    uni.showToast({
-      title: '订阅成功',
-      icon: 'success'
-    })
+    // 先检查is_check_passed
+    if (result && result.isCheckPassed === false) {
+      uni.hideLoading()
+      uni.showToast({
+        title: '订阅失败',
+        icon: 'error'
+      })
+      return
+    }
+    
+    // 检查是否需要确认
+    if (result && result.needConfirm) {
+      uni.hideLoading() // 先隐藏加载提示
+      
+      // 显示确认弹窗
+      const confirmResult = await new Promise((resolve) => {
+        uni.showModal({
+          title: '确认订阅',
+          content: result.tips || '是否确认继续订阅？',
+          confirmText: '确认',
+          cancelText: '取消',
+          success: (res) => {
+            resolve(res.confirm)
+          },
+          fail: () => {
+            resolve(false)
+          }
+        })
+      })
+      
+      if (!confirmResult) {
+        // 用户取消了确认
+        uni.showToast({
+          title: '已取消订阅',
+          icon: 'none'
+        })
+        return
+      }
+      
+      // 用户确认后，重新显示加载并继续购买流程
+      uni.showLoading({
+        title: '正在处理订阅...',
+        mask: true
+      })
+      
+      // 调用购买
+      const finalResult = await iapManager.purchaseProduct(currentPlan.productId)
+      console.log('订阅成功:', finalResult)
+      uni.showToast({
+        title: '订阅成功',
+        icon: 'success'
+      })
+    } else {
+      console.log('订阅成功:', result)
+      uni.showToast({
+        title: '订阅成功',
+        icon: 'success'
+      })
+    }
     
   } catch (error) {
     console.error('订阅失败:', error)

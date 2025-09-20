@@ -1,4 +1,5 @@
 import { baseComponent } from './base.js';
+import { user } from './user.js';
 
 class IAPManager {
     constructor() {
@@ -7,6 +8,7 @@ class IAPManager {
         this.initError = null;
         this.products = [];
         this.baseUrl = "http://interstellar.a22t.com"
+        this.mockUrl = "https://m1.apifoxmock.com/m1/7020404-6739146-default"
     }
 
     async init() {
@@ -37,8 +39,8 @@ class IAPManager {
                 url: `${this.baseUrl}/v1/products`,
                 method: 'GET',
                 header: {
-                    'Authorization': `Bearer ${uni.getStorageSync('token')}`,
-                    'CLIENT-UDID': uni.getStorageSync('udid') || '',
+                    'Authorization': `Bearer ${user.token}`,
+                    'CLIENT-UDID': user.uuid || '',
                     'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
                     'CLIENT-VERSION': '1.0.0',
                     'ACCEPT-LANGUAGE': 'zh-CN'
@@ -58,57 +60,81 @@ class IAPManager {
         }
     }
 
+    async checkProduct(productId) {
+        try {
+            console.log('开始商品信息和用户资格:', productId)
+
+            // 查找产品信息
+            const product = this.products.find(p => p.product_id === productId);
+            if (!product) {
+                throw new Error(`未找到产品: ${productId}`);
+            }
+
+            // 向后端校验
+            const res = await this.serverCheckPurchase(productId, user.transactionId);
+            if (!res.success) {
+                throw new Error('后端校验失败');
+            }
+            
+            // 如果需要确认，返回确认信息给调用方处理
+            if (res.data && res.data.needConfirm) {
+                return {
+                    needConfirm: true,
+                    tips: res.data.tips,
+                    productId: productId
+                };
+            }
+            
+            // 检测通过
+            return {
+                needConfirm: false,
+                productId: productId
+            };
+        } catch (error) {
+            console.error('检查产品失败:', error);
+            throw error;
+        }
+    }
+
     async purchaseProduct(productId) {
         try {
-        console.log('开始购买产品:', productId);
-        
-        if (!this.isInit) {
-            throw new Error('IAP未初始化');
-        }
-        
-        // 查找产品信息
-        const product = this.products.find(p => p.product_id === productId);
-        if (!product) {
-            throw new Error(`未找到产品: ${productId}`);
-        }
-
-        // 向后端校验
-        const res = await this.serverCheckPurchase(productId);
-        if (!res.success) {
-            throw new Error('后端校验失败');
-        }
-        
-        return new Promise((resolve, reject) => {
-            uni.requestPayment({
-            provider: 'appleiap',
-            orderInfo: {
-                productid: productId
-            },
-            success: async (result) => {
-                console.log('购买成功:', result);
-                try {
-                    await this.handlePurchaseSuccess(result, product);
-                    resolve(result);
-                } catch (error) {
-                    console.error('处理购买成功回调失败:', error);
+            console.log('开始购买产品:', productId);
+            
+            if (!this.isInit) {
+                throw new Error('IAP未初始化');
+            }
+            
+            return new Promise((resolve, reject) => {
+                uni.requestPayment({
+                provider: 'appleiap',
+                orderInfo: {
+                    productid: productId
+                },
+                success: async (result) => {
+                    console.log('购买成功:', result);
+                    try {
+                        // await this.handlePurchaseSuccess(result, product);
+                        resolve(result);
+                    } catch (error) {
+                        console.error('处理购买成功回调失败:', error);
+                        reject(error);
+                    }
+                },
+                fail: async (error) => {
+                    console.error('购买失败:', error);
+                    try {
+                        await this.handlePurchaseError(error, productId);
+                    } catch (handleError) {
+                        console.error('处理购买失败回调失败:', handleError);
+                    }
                     reject(error);
                 }
-            },
-            fail: async (error) => {
-                console.error('购买失败:', error);
-                try {
-                    await this.handlePurchaseError(error, productId);
-                } catch (handleError) {
-                    console.error('处理购买失败回调失败:', handleError);
-                }
-                reject(error);
-            }
+                });
             });
-        });
-        } catch (error) {
-        console.error('购买产品失败:', error);
-        throw error;
-        }
+            } catch (error) {
+                console.error('购买产品失败:', error);
+                throw error;
+            }
     }
 
     /**
@@ -176,30 +202,49 @@ class IAPManager {
     }
 
     /**
-     * 后端校验购买
+     * 后端校验购买 - 订阅验证
+     * @param {string} productId - 产品ID
+     * @param {string} transactionId - 随意一个订单ID
      */
-    async serverCheckPurchase(productId) {
-        console.log('开始后端校验购买:', productId);
+    async serverCheckPurchase(productId, transactionId) {
+        console.log('开始后端校验购买:', productId, transactionId);
         try {
+            // 根据productId获取订阅ID
+            const subscriptionId = this.getSubscriptionIdByProductId(productId);
+            if (!subscriptionId) {
+                console.error('未找到对应的订阅ID:', productId);
+                return { success: false, message: '未找到对应的订阅产品' };
+            }
+
             const response = await uni.request({
-                url: '/v1/purchase/verify',
+                url: `${this.mockUrl}/v1/subscriptions/${subscriptionId}`,
                 method: 'POST',
                 header: {
-                    'Authorization': `Bearer ${uni.getStorageSync('token')}`,
-                    'CLIENT-UDID': uni.getStorageSync('udid') || '',
+                    'Authorization': `Bearer ${user.token}`,
+                    'CLIENT-UDID': user.uuid || '',
                     'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
                     'CLIENT-VERSION': '1.0.0',
                     'ACCEPT-LANGUAGE': 'zh-CN',
                     'Content-Type': 'application/json'
                 },
                 data: {
-                    product_id: productId
+                    transaction_id: transactionId
                 }
             });
 
-            if (response.data && response.data.code === 200000) {
+            console.log('后端校验购买响应:', response);
+
+            if (response.statusCode === 200) {
                 console.log('后端校验成功:', response.data);
-                return { success: true, data: response.data.data };
+                const { is_check_passed, need_confirm, tips } = response.data.data;
+                return { 
+                    success: true, 
+                    data: {
+                        isCheckPassed: is_check_passed,
+                        needConfirm: need_confirm,
+                        tips: tips
+                    }
+                };
             } else {
                 console.error('后端校验失败:', response.data);
                 return { success: false, message: response.data?.message || '校验失败' };
@@ -208,6 +253,21 @@ class IAPManager {
             console.error('后端校验请求失败:', error);
             return { success: false, message: '网络请求失败' };
         }
+    }
+
+    /**
+     * 根据产品ID获取订阅ID
+     * @param {string} productId - 产品ID
+     * @returns {number|null} - 订阅ID
+     */
+    getSubscriptionIdByProductId(productId) {
+        if (!this.products || this.products.length === 0) {
+            console.warn('产品列表为空，无法获取订阅ID');
+            return null;
+        }
+
+        const product = this.products.find(p => p.product_id === productId);
+        return product ? product.id : null;
     }
 
     /**
