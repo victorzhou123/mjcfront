@@ -256,7 +256,8 @@ const subscribe = async () => {
         icon: 'success'
       })
     } else {
-      console.log('订阅成功:', result)
+      const finalResult = await iapManager.purchaseProduct(currentPlan.productId)
+      console.log('订阅成功:', finalResult)
       uni.showToast({
         title: '订阅成功',
         icon: 'success'

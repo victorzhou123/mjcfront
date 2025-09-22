@@ -70,7 +70,10 @@ class IAPManager {
                 throw new Error(`未找到产品: ${productId}`);
             }
 
-            // 向后端校验
+            // 前端直接向apple服务器进行产品信息校验
+            await this.getProducts([productId]);
+
+            // 向后端校验产品信息
             const res = await this.serverCheckPurchase(productId, user.transactionId);
             if (!res.success) {
                 throw new Error('后端校验失败');
@@ -94,6 +97,21 @@ class IAPManager {
             console.error('检查产品失败:', error);
             throw error;
         }
+    }
+
+    async getProducts(productIds) {
+        console.log('开始获取iap商品列表');
+        return new Promise((resolve, reject) => {
+        this.channel.requestProduct(productIds, (res) => {
+            // 打印商品列表
+            console.log('获取到的商品列表:', res);
+            resolve(res);
+        }, (err) => {
+            // 打印错误信息
+            console.error('获取商品列表失败:', err);
+            reject(err);
+        })
+        });
     }
 
     async purchaseProduct(productId) {
