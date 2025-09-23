@@ -1,4 +1,5 @@
 import { baseComponent } from './base.js';
+import { MOCK_URL } from './config.js';
 
 class User {
     constructor() {
@@ -11,7 +12,7 @@ class User {
         this.accessExpiresAt = 0
         this.refreshExpiresAt = 0
         this.userInfo = null
-        this.apiBaseUrl = "https://m1.apifoxmock.com/m1/7020404-6739146-default" // 请根据实际API地址修改
+        this.apiBaseUrl = MOCK_URL; // 请根据实际API地址修改
     }
 
     async init() {

@@ -1,7 +1,8 @@
+import { MOCK_URL } from './config.js';
+
 class Painter {
     constructor() {
-        // this.baseUrl = "http://interstellar.a22t.com"
-        this.baseUrl = "https://m1.apifoxmock.com/m1/7020404-0-default"
+        this.baseUrl = MOCK_URL;
     }
 
     paint(prompt) {

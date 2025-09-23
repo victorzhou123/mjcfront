@@ -1,5 +1,6 @@
 import { baseComponent } from './base.js';
 import { user } from './user.js';
+import { BASE_URL, MOCK_URL } from './config.js';
 
 class IAPManager {
     constructor() {
@@ -7,8 +8,8 @@ class IAPManager {
         this.isInit = false;
         this.initError = null;
         this.products = [];
-        this.baseUrl = "http://interstellar.a22t.com"
-        this.mockUrl = "https://m1.apifoxmock.com/m1/7020404-6739146-default"
+        this.baseUrl = BASE_URL;
+        this.mockUrl = MOCK_URL;
     }
 
     async init() {
