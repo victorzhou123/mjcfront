@@ -565,7 +565,7 @@ const clearChatHistory = () => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 8px 4vw 8px 4vw;
+  padding: 8px 2vw 8px 2vw;
   width: 100%;
   min-width: 320px;
 }
@@ -618,7 +618,7 @@ const clearChatHistory = () => {
 .frame92 {
   display: flex;
   align-items: flex-start;
-  padding: 8px 4vw 8px 4vw;
+  padding: 8px 2vw 8px 2vw;
   width: 100%;
   max-width: 100vw;
   min-height: auto;
@@ -632,7 +632,7 @@ const clearChatHistory = () => {
   align-items: flex-start;
   justify-content: center;
   column-gap: 10px;
-  padding: 0px 10px 10px 0px;
+  /* padding: 0px 5px 5px 0px; */
 }
 
 .frame8 {
@@ -640,12 +640,12 @@ const clearChatHistory = () => {
   flex-direction: column;
   flex-shrink: 0;
   align-items: flex-start;
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .ai-timestamp {
   flex-shrink: 0;
-  padding: 0px 10px 10px 0px;
+  padding: 0px 0px 10px 9px;
   line-height: 22px;
   letter-spacing: 0;
   color: #000000;
@@ -657,7 +657,7 @@ const clearChatHistory = () => {
   flex-shrink: 0;
   background: #d9d9d9;
   width: fit-content;
-  max-width: calc(100vw - 120px);
+  max-width: calc(100vw - 100px);
   min-width: 200px;
   min-height: 60px;
   display: flex;
@@ -701,8 +701,8 @@ const clearChatHistory = () => {
 }
 
 .grid-image {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   object-fit: cover;
 }
 
