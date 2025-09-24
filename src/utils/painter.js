@@ -1,8 +1,9 @@
-import { MOCK_URL } from './config.js';
+import { BASE_URL } from './config.js';
+import { user } from './user.js';
 
 class Painter {
     constructor() {
-        this.baseUrl = MOCK_URL;
+        this.baseUrl = BASE_URL
     }
 
     paint(prompt) {
@@ -11,6 +12,10 @@ class Painter {
             uni.request({
                 url: this.baseUrl + "/v1/task/imagine",
                 method: "POST",
+                header: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
                 data: {
                     prompt: prompt
                 },
@@ -18,6 +23,7 @@ class Painter {
                     if (res.data.code === 200000) {
                         resolve(res.data.data.task_id);
                     } else {
+                        console.error('图片生成请求失败:', res.data.msg, '错误码:', res.data.code);
                         reject(new Error(res.data.msg));
                     }
                 },
@@ -53,10 +59,15 @@ class Painter {
             uni.request({
                 url: this.baseUrl + "/v1/tasks/" + taskId,
                 method: "GET",
+                header: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
                 success: (res) => {
                     if (res.data.code === 200000) {
                         resolve(res.data.data);
                     } else {
+                        console.error('任务状态查询失败:', res.data.msg, '错误码:', res.data.code);
                         reject(new Error(res.data.msg));
                     }
                 },

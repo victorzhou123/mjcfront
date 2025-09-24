@@ -1,5 +1,5 @@
 import { baseComponent } from './base.js';
-import { MOCK_URL } from './config.js';
+import { BASE_URL } from './config.js';
 
 class User {
     constructor() {
@@ -12,13 +12,15 @@ class User {
         this.accessExpiresAt = 0
         this.refreshExpiresAt = 0
         this.userInfo = null
-        this.apiBaseUrl = MOCK_URL; // 请根据实际API地址修改
+        this.apiBaseUrl = BASE_URL; // 请根据实际API地址修改
     }
 
     async init() {
         if (this.isInit) {
             return
         }
+
+        console.log('user init begin...')
 
         // 先尝试从本地存储加载用户信息
         const hasLocalUserInfo = this.loadUserInfo()
@@ -31,8 +33,6 @@ class User {
         this.uuid = this.getUUID()
 
         this.isInit = true
-
-        console.log('userinfo:', this.userInfo)
 
         // 智能处理token状态
         if (!hasLocalUserInfo) {

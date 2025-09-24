@@ -356,7 +356,7 @@ const allMessages = computed(() => {
 
 // 图片加载成功处理
 const handleImageLoad = (e) => {
-  console.log('图片加载成功:', e.target.src)
+  // console.log('图片加载成功:', e.target.src)
 }
 
 // 图片加载错误处理
@@ -701,8 +701,8 @@ const clearChatHistory = () => {
 }
 
 .grid-image {
-  width: 140px;
-  height: 140px;
+  width: 135px;
+  height: 135px;
   object-fit: cover;
 }
 
