@@ -132,7 +132,7 @@ class IAPManager {
                 success: async (result) => {
                     console.log('购买成功:', result);
                     try {
-                        // await this.handlePurchaseSuccess(result, product);
+                        await this.handlePurchaseSuccess(result);
                         resolve(result);
                     } catch (error) {
                         console.error('处理购买成功回调失败:', error);
@@ -159,26 +159,56 @@ class IAPManager {
     /**
     * 处理购买成功
     */
-    async handlePurchaseSuccess(result, product) {
+//    result example
+//    {
+//     "payment": {
+//         "productid": "mjc.vip.week",
+//         "quantity": "1",
+//         "username": "(null)"
+//     },
+//     "transactionDate": "2025-09-25 08:41:43",
+//     "transactionIdentifier": "2000001020353154",
+//     "transactionReceipt": "xxxxx"
+//     "transactionState": "1",
+//     "errMsg": "requestPayment:ok"
+//     }
+    async handlePurchaseSuccess(result) {
         try {
-        console.log('处理购买成功:', result, product);
-        
-        // 验证收据
-        const verifyResult = await this.verifyReceipt(result);
-        if (!verifyResult.success) {
-            throw new Error('收据验证失败');
-        }
-        
-        console.log(`购买成功，订阅了${product.title}`);
-        
-        return {
-            success: true,
-            title: product.title,
-            result: result
-        };
+            console.log('处理购买成功:', result);
+            
+            // 验证收据，失败时重试2次
+            let verifyResult;
+            let retryCount = 0;
+            const maxRetries = 2;
+            
+            do {
+                verifyResult = await this.subscribeDelivery(result);
+                if (verifyResult.success) {
+                    break;
+                }
+                
+                retryCount++;
+                if (retryCount <= maxRetries) {
+                    console.log(`收据验证失败，正在进行第${retryCount}次重试...`);
+                    // 等待0.5秒后重试
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            } while (retryCount <= maxRetries);
+            
+            if (!verifyResult.success) {
+                throw new Error(`收据验证失败，已重试${maxRetries}次`);
+            }
+            
+            console.log(`购买成功！`);
+            
+            return {
+                success: true,
+                title: result.payment.productid,
+                result: result
+            };
         } catch (error) {
-        console.error('处理handlePurchaseSuccess失败:', error);
-        throw error;
+            console.error('处理handlePurchaseSuccess失败:', error);
+            throw error;
         }
     }
 
@@ -197,26 +227,54 @@ class IAPManager {
     }
 
     /**
-     * 验证收据
+     * 处理购买成功，订阅交付
      */
-    async verifyReceipt(result) {
+    async subscribeDelivery(result) {
         try {
-        console.log('开始验证收据:', result);
-        
-        // 这里应该调用服务器验证收据，请求后端接口
-        // 目前先返回成功，实际项目中需要实现服务器验证
-        const verifyResult = await this.serverVerifyReceipt(result.receipt);
-        
-        return {
-            success: true,
-            result: verifyResult
-        };
+            console.log('开始验证收据:', result);
+            
+            // 向后端请求订阅交付接口
+            const response = await uni.request({
+                url: `${this.mockUrl}/v1/subscriptions/deliver`,
+                method: 'POST',
+                header: {
+                    'Authorization': `Bearer ${user.token}`,
+                    'CLIENT-UDID': user.uuid || '',
+                    'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
+                    'CLIENT-VERSION': '1.0.0',
+                    'ACCEPT-LANGUAGE': 'zh-CN',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    transaction_id: result.transactionId
+                }
+            });
+            
+            console.log('订阅交付响应:', response);
+            
+            // 检查响应状态
+            if (response.data) {
+                const isDelivered = response.data.data.is_deliver;
+                console.log('订阅交付结果:', isDelivered);
+                
+                return {
+                    success: true,
+                    isDelivered: isDelivered,
+                    result: response.data
+                };
+            } else {
+                console.error('订阅交付失败:', response.data.message || '未知错误');
+                return {
+                    success: false,
+                    error: response.data.message || '订阅交付失败'
+                };
+            }
         } catch (error) {
-        console.error('验证收据失败:', error);
-        return {
-            success: false,
-            error: error
-        };
+            console.error('处理订阅交付失败:', error);
+            return {
+                success: false,
+                error: error
+            };
         }
     }
 
@@ -287,18 +345,6 @@ class IAPManager {
 
         const product = this.products.find(p => p.product_id === productId);
         return product ? product.id : null;
-    }
-
-    /**
-     * 服务器验证收据
-     */
-    async serverVerifyReceipt(receipt) {
-        // TODO: 实现服务器收据验证，给后端传送receipt.transactionIdentifier
-        console.log('服务器验证收据:', receipt);
-        return {
-            success: true,
-            receipt: receipt
-        };
     }
 
     /**

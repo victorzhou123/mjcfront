@@ -11,7 +11,6 @@ node_modules
 .DS_Store
 dist
 *.local
-*api.yaml
 
 # Editor directories and files
 .idea

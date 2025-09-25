@@ -743,3 +743,129 @@ servers:
 security: []
 
 ```
+
+# 订阅交付
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /v1/subscriptions/deliver:
+    post:
+      summary: 订阅交付
+      deprecated: false
+      description: ''
+      tags:
+        - 商业化
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: string
+                  title: 订单ID
+              required:
+                - transaction_id
+              x-apifox-orders:
+                - transaction_id
+            example:
+              transaction_id: '1'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      is_deliver:
+                        type: boolean
+                        title: 是否成功交付
+                    required:
+                      - is_deliver
+                    x-apifox-orders:
+                      - is_deliver
+                  code:
+                    type: integer
+                required:
+                  - message
+                  - data
+                  - code
+                x-apifox-orders:
+                  - message
+                  - data
+                  - code
+              example:
+                message: 操作成功！
+                data:
+                  is_deliver: false
+                code: 200000
+          headers: {}
+          x-apifox-name: 成功
+      security:
+        - bearer: []
+      x-apifox-folder: 商业化
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-342175208-run
+components:
+  schemas: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers:
+  - url: ''
+    description: 云端 Mock
+security: []
+
+```
