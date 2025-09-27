@@ -15,17 +15,23 @@ class User {
         }
 
         console.log('user init begin...')
-        
+
         if (!baseComponent.isInit) {
             await baseComponent.init()
         }
 
-        this.transactionId = baseComponent.transactionId
-        this.uuid = this.getUUID()
+        await this.setUUID()
+
+        console.log('uuid in user:', uni.getStorageSync(USER_UUID))
 
         this.isInit = true
 
         await this.login()
+    }
+
+    async setUUID() {
+        uni.setStorageSync(USER_TRANSACTION_ID, uni.getStorageSync(USER_TRANSACTION_ID))
+        uni.setStorageSync(USER_UUID, this.getUUID())
     }
 
     getUUID() {

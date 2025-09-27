@@ -1,7 +1,7 @@
 import { imageStorage } from './imageStorage.js';
 
 // 保存到相册的通用方法
-const saveToAlbum = (filePath) => {
+export const saveToAlbum = (filePath) => {
   console.log('开始保存图片到相册:', filePath)
   uni.saveImageToPhotosAlbum({
     filePath: filePath,
@@ -64,7 +64,7 @@ const saveToAlbum = (filePath) => {
 }
 
 // 下载图片到手机相册
-const downloadImage = (image) => {
+export const downloadImage = (image) => {
   uni.showLoading({
     title: '保存中...'
   })
@@ -102,7 +102,7 @@ const downloadImage = (image) => {
 }
 
 // 显示图片详情
-const showImageDetails = (image) => {
+export const showImageDetails = (image) => {
   const saveTime = new Date(image.saveTime).toLocaleString('zh-CN')
   const content = `生成时间: ${saveTime}\n提示词: ${image.prompt || '无'}\n图片序号: ${image.index || 1}/${image.imageCount || 1}`
 
@@ -115,7 +115,7 @@ const showImageDetails = (image) => {
 }
 
 // 删除图片
-const deleteImage = (image, onDeleteSuccess) => {
+export const deleteImage = (image, onDeleteSuccess) => {
   uni.showModal({
     title: '确认删除',
     content: '确定要删除这张图片吗？此操作不可恢复。',
@@ -148,18 +148,30 @@ export const showImageActionSheet = (image, imageList, onDeleteSuccess, options 
   const { fromPreview = false } = options;
   const itemList = [];
 
+  console.log('showImageActionSheet 调用参数:', {
+    image,
+    fromPreview,
+    imageListLength: imageList?.length
+  });
+
   if (!fromPreview && imageList && Array.isArray(imageList) && imageList.length > 0) {
     itemList.push('预览图片');
+    console.log('添加: 预览图片');
   }
   if (image.prompt || image.saveTime) {
     itemList.push('查看详情');
+    console.log('添加: 查看详情', { prompt: image.prompt, saveTime: image.saveTime });
   }
   if (image.url) {
     itemList.push('保存图片');
+    console.log('添加: 保存图片', { url: image.url });
   }
   if (image.id) {
     itemList.push('删除图片');
+    console.log('添加: 删除图片', { id: image.id });
   }
+
+  console.log('最终操作列表:', itemList);
 
   if (itemList.length === 0) {
     console.warn('No actions available for this image.');

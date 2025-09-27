@@ -1,8 +1,9 @@
+import { USER_TRANSACTION_ID } from './config.js'
+
 class BaseComponent {
     constructor() {
         this.isInit = false
         this.channel = null
-        this.transactionId = ""
     }
 
     async init() {
@@ -55,8 +56,10 @@ class BaseComponent {
 
     async getTransactionId() {
         console.log('开始获取transactionId');
-        if (this.transactionId) {
-            return this.transactionId;
+        const transactionId = uni.getStorageSync(USER_TRANSACTION_ID)
+
+        if (transactionId != "") {
+            return transactionId;
         }
 
         console.log('开始获取完成了但是没关闭的订单');
@@ -66,18 +69,19 @@ class BaseComponent {
                 this.channel.restoreCompletedTransactions({}, (restoreResult) => {
                     console.log('restoreResult:', restoreResult);
 
-                    if (this.transactionId == "" && restoreResult && restoreResult.length > 0) {
+                    if (transactionId == "" && restoreResult && restoreResult.length > 0) {
                         // 遍历restoreResult，找到一个object，obejct.payment.productid里含有vip字符且obejct.transactionState==1的
                         restoreResult.forEach(transaction => {
                             console.log('transaction:', transaction);
                             if (transaction.payment.productId.indexOf("vip") !== -1) {
-                                this.transactionId = transaction.transactionId;
+                                transactionId = transaction.transactionId
+                                uni.setStorageSync(USER_TRANSACTION_ID, transactionId);
                             }
                         });
-                        resolve(this.transactionId);
+                        resolve(transactionId);
                     }
 
-                    resolve(this.transactionId);
+                    resolve(uni.getStorageSync(USER_TRANSACTION_ID));
                 }, (error) => {
                     console.error('恢复购买请求失败:', error);
                     reject(error);

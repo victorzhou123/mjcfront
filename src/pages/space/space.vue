@@ -12,7 +12,7 @@
             v-for="(image, index) in userImages" 
             :key="image.id" 
             class="image-item"
-            @tap="previewImage(image)"
+            @tap="directPreviewImage(image)"
           >
             <image 
               :src="image.url" 
@@ -51,7 +51,7 @@ import { ref, onMounted } from 'vue'
 import BottomNavigation from '@/components/BottomNavigation.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import { imageStorage } from '@/utils/imageStorage.js'
-import { showImageActionSheet } from '@/utils/imageActions.js'
+import { saveToAlbum, deleteImage } from '@/utils/imageActions.js'
 
 // 响应式数据
 const userImages = ref([])
@@ -103,9 +103,7 @@ const loadUserImages = () => {
       index: item.index
     }))
     
-    console.log('加载的图片数据:', userImages.value)
-    
-    // 如果没有图片，显示空状态
+    // 如果没有图片数据，添加一些测试数据（仅用于开发测试）
     if (userImages.value.length === 0) {
       console.log('没有找到本地保存的图片')
     }
@@ -122,11 +120,28 @@ const loadUserImages = () => {
   }
 }
 
-// 预览图片
-const previewImage = (image) => {
-  showImageActionSheet(image, userImages.value, () => {
-    // 删除成功后的回调
-    loadUserImages()
+// 直接预览图片（点击时）
+const directPreviewImage = (image) => {
+  uni.previewImage({
+    urls: userImages.value.map(img => img.url),
+    current: image.url,
+    showmenu: true,
+    longPressActions: {
+      itemList: ['保存图片', '删除图片'],
+      success: function(data) {
+        console.log('data in space: ', data)
+
+
+        if (data.tapIndex === 0) {
+          saveToAlbum(image.url)
+        } else if (data.tapIndex === 1) {
+          deleteImage(image, loadUserImages)
+        }
+      },
+      fail: function(err) {
+        console.log(err.errMsg);
+      }
+    }
   })
 }
 

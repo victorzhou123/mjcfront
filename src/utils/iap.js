@@ -1,5 +1,5 @@
 import { baseComponent } from './base.js';
-import { USER_TOKEN } from './config.js';
+import { USER_TOKEN, USER_UUID } from './config.js';
 import { BASE_URL, MOCK_URL } from './config.js';
 
 class IAPManager {

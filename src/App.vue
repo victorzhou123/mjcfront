@@ -16,7 +16,7 @@ export default {
     
     // 初始化User实例
     try {
-      user.init()
+      await user.init()
       console.log('User初始化成功')
     } catch (error) {
       console.error('User初始化失败:', error)
