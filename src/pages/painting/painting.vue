@@ -66,41 +66,7 @@
     <!-- 底部导航栏 -->
     <BottomNavigation current-page="painting" />
     
-    <!-- 图片预览弹窗 -->
-    <view v-if="showImagePreview" class="image-preview-modal" @tap="closeImagePreview">
-      <view class="preview-container">
-        <!-- 关闭按钮 -->
-        <view class="close-btn" @tap="closeImagePreview">
-          <text class="close-icon">×</text>
-        </view>
-        
-        <!-- 图片显示区域 -->
-        <view class="preview-image-container">
-          <image 
-            :src="previewImages[currentImageIndex]" 
-            class="preview-image" 
-            mode="aspectFit"
-            @tap.stop
-            @longpress="handlePreviewImageLongPress"
-          />
-        </view>
-        
-        <!-- 多图片时的导航按钮 -->
-        <view v-if="previewImages.length > 1" class="nav-buttons">
-          <view class="nav-btn prev-btn" @tap.stop="switchImage('prev')">
-            <text class="nav-icon">‹</text>
-          </view>
-          <view class="nav-btn next-btn" @tap.stop="switchImage('next')">
-            <text class="nav-icon">›</text>
-          </view>
-        </view>
-        
-        <!-- 图片指示器 -->
-        <view v-if="previewImages.length > 1" class="image-indicator" @tap.stop>
-          <text class="indicator-text">{{ currentImageIndex + 1 }} / {{ previewImages.length }}</text>
-        </view>
-      </view>
-    </view>
+
   </view>
 </template>
 
@@ -112,7 +78,7 @@ import InputArea from '@/components/InputArea.vue'
 import { painter } from '@/utils/painter.js'
 import { storage } from '@/utils/storage.js'
 import { imageStorage } from '@/utils/imageStorage.js'
-import { showImageActionSheet } from '@/utils/imageActions.js'
+import { saveToAlbum } from '@/utils/imageActions.js'
 
 // 响应式数据
 const isGenerating = ref(false)
@@ -123,10 +89,7 @@ const scrollTop = ref(0)
 const scrollIntoView = ref('')
 const inputAreaRef = ref(null)
 
-// 图片预览相关
-const showImagePreview = ref(false)
-const previewImages = ref([])
-const currentImageIndex = ref(0)
+
 
 // 格式化时间戳
 const formatTimestamp = (addSeconds = 0) => {
@@ -276,44 +239,31 @@ watch([userMessages, aiReplies], async () => {
 
 // 图片预览相关方法
 const previewImage = (imageUrl, allImages = [], clickedIndex = null) => {
-  if (allImages.length > 0) {
-    previewImages.value = allImages
-    // 如果提供了点击的索引，直接使用；否则通过URL查找
-    if (clickedIndex !== null) {
-      currentImageIndex.value = clickedIndex
-    } else {
-      const foundIndex = allImages.findIndex(img => img === imageUrl)
-      currentImageIndex.value = foundIndex >= 0 ? foundIndex : 0
-    }
-  } else {
-    previewImages.value = [imageUrl]
-    currentImageIndex.value = 0
-  }
-  showImagePreview.value = true
-}
-
-const closeImagePreview = () => {
-  showImagePreview.value = false
-  previewImages.value = []
-  currentImageIndex.value = 0
-}
-
-const switchImage = (direction) => {
-  if (previewImages.value.length <= 1) return
+  // 准备预览的图片URL数组
+  const urls = allImages.length > 0 ? allImages : [imageUrl]
   
-  if (direction === 'prev') {
-    currentImageIndex.value = currentImageIndex.value > 0 ? currentImageIndex.value - 1 : previewImages.value.length - 1
-  } else {
-    currentImageIndex.value = currentImageIndex.value < previewImages.value.length - 1 ? currentImageIndex.value + 1 : 0
-  }
+  uni.previewImage({
+    urls: urls,
+    current: imageUrl,
+    showmenu: true,
+    longPressActions: {
+      itemList: ['保存图片'],
+      success: function(data) {
+        console.log('长按操作选择:', data)
+        
+        if (data.tapIndex === 0) {
+          // 保存图片
+          saveToAlbum(imageUrl)
+        }
+      },
+      fail: function(err) {
+        console.log('长按操作失败:', err.errMsg)
+      }
+    }
+  })
 }
 
-const handlePreviewImageLongPress = () => {
-  const currentImage = previewImages.value[currentImageIndex.value]
-  if (currentImage) {
-    showImageActionSheet({ url: currentImage }, [], null, { fromPreview: true })
-  }
-}
+
 
 
 
@@ -714,113 +664,5 @@ const clearChatHistory = () => {
   width: 100%;
 }
 
-/* 图片预览弹窗样式 */
-.image-preview-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.preview-container {
-  position: relative;
-  width: 85%;
-  height: 75%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn {
-  position: absolute;
-  top: -50px;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-}
-
-.close-icon {
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.preview-image-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.nav-buttons {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  transform: translateY(-50%);
-  display: flex;
-  justify-content: space-between;
-  pointer-events: auto;
-  z-index: 10;
-}
-
-.nav-btn {
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.prev-btn {
-  margin-left: -25px;
-}
-
-.next-btn {
-  margin-right: -25px;
-}
-
-.nav-icon {
-  color: white;
-  font-size: 30px;
-  font-weight: bold;
-}
-
-.image-indicator {
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px 15px;
-  border-radius: 15px;
-}
-
-.indicator-text {
-  color: white;
-  font-size: 14px;
-}
 </style>

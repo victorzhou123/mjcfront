@@ -108,8 +108,7 @@ class User {
             if (response.code === 200000 && response.data) {
                 // 保存登录用户信息
                 this.saveLoginUserInfo(response.data)
-
-                await this.getUserInfo()
+                this.getUserInfo()
                 
                 console.log('登录成功，用户信息:', this.userInfo)
                 return response.data
