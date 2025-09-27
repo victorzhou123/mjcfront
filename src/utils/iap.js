@@ -1,5 +1,5 @@
 import { baseComponent } from './base.js';
-import { user } from './user.js';
+import { USER_TOKEN } from './config.js';
 import { BASE_URL, MOCK_URL } from './config.js';
 
 class IAPManager {
@@ -40,8 +40,8 @@ class IAPManager {
                 url: `${this.baseUrl}/v1/products`,
                 method: 'GET',
                 header: {
-                    'Authorization': `Bearer ${user.token}`,
-                    'CLIENT-UDID': user.uuid || '',
+                    'Authorization': `Bearer ${uni.getStorageSync(USER_TOKEN)}`,
+                    'CLIENT-UDID': uni.getStorageSync(USER_UUID) || '',
                     'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
                     'CLIENT-VERSION': '1.0.0',
                     'ACCEPT-LANGUAGE': 'zh-CN'
@@ -297,8 +297,8 @@ class IAPManager {
                 url: `${this.mockUrl}/v1/subscriptions/${subscriptionId}`,
                 method: 'POST',
                 header: {
-                    'Authorization': `Bearer ${user.token}`,
-                    'CLIENT-UDID': user.uuid || '',
+                    'Authorization': `Bearer ${uni.getStorageSync(USER_TOKEN)}`,
+                    'CLIENT-UDID': uni.getStorageSync(USER_UUID) || '',
                     'CLIENT-PLATFORM': uni.getSystemInfoSync().platform,
                     'CLIENT-VERSION': '1.0.0',
                     'ACCEPT-LANGUAGE': 'zh-CN',

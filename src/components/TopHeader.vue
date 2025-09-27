@@ -2,6 +2,11 @@
   <view class="frame4">
     <view class="frame5"></view>
     <view class="frame6">
+      <view class="left-section">
+        <view v-if="showVipIcon" class="vip-btn">
+          <image src="/static/vip.svg" class="vip-icon" />
+        </view>
+      </view>
       <text class="text">{{ title }}</text>
       <view class="header-buttons">
         <view v-if="showClear" class="clear-btn" @click="handleClearClick">
@@ -16,6 +21,9 @@
 </template>
 
 <script setup>
+import { computed, defineEmits, ref, onMounted } from 'vue'
+import { user } from '@/utils/user.js'
+
 // 定义props
 const props = defineProps({
   title: {
@@ -34,6 +42,23 @@ const props = defineProps({
 
 // 定义emits
 const emit = defineEmits(['clear'])
+
+// 响应式用户信息
+const vipRank = ref(null)
+
+// 计算是否显示VIP图标
+const showVipIcon = computed(() => {
+  return vipRank.value
+})
+
+// 组件挂载时获取用户信息
+onMounted(async () => {
+  try {
+    vipRank.value = await user.isVip()
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+  }
+})
 
 // 设置按钮点击事件
 const handleSettingsClick = () => {
@@ -117,6 +142,26 @@ const handleClearClick = () => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: relative;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.vip-btn {
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vip-icon {
+  width: 34px;
+  height: 34px;
+  display: block;
 }
 
 .settings-icon {

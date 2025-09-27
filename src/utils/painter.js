@@ -1,5 +1,5 @@
-import { BASE_URL } from './config.js';
-import { user } from './user.js';
+import { BASE_URL, USER_TOKEN } from './config.js';
+
 
 class Painter {
     constructor() {
@@ -14,7 +14,7 @@ class Painter {
                 method: "POST",
                 header: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
+                    'Authorization': `Bearer ${uni.getStorageSync(USER_TOKEN)}`
                 },
                 data: {
                     prompt: prompt
@@ -61,7 +61,7 @@ class Painter {
                 method: "GET",
                 header: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
+                    'Authorization': `Bearer ${uni.getStorageSync(USER_TOKEN)}`
                 },
                 success: (res) => {
                     if (res.data.code === 200000) {

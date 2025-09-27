@@ -869,3 +869,193 @@ servers:
 security: []
 
 ```
+
+# 获取用户状态
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /v1/user:
+    get:
+      summary: 获取用户状态
+      deprecated: false
+      description: ''
+      tags:
+        - 我的
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        title: ID
+                      name:
+                        type: string
+                        title: 用户名
+                      phone:
+                        type: string
+                        title: 手机号
+                      free_points:
+                        type: number
+                        title: 免费积分
+                        description: 浮点数
+                      recharge_points:
+                        type: number
+                        title: 永久积分
+                        description: 浮点数
+                      subscription_points:
+                        type: number
+                        title: 订阅积分
+                        description: 浮点数
+                      status:
+                        type: integer
+                        title: 状态
+                      uuid:
+                        type: string
+                        title: 用户唯一ID
+                      vip:
+                        type: integer
+                        title: vip 等级
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                          - 3
+                          - 4
+                        x-apifox-enum:
+                          - value: 0
+                            name: 无会员
+                            description: ''
+                          - value: 1
+                            name: 周会员
+                            description: ''
+                          - value: 2
+                            name: 月会员
+                            description: ''
+                          - value: 3
+                            name: 季会员
+                            description: ''
+                          - value: 4
+                            name: 年会员
+                            description: ''
+                      vip_expired_time:
+                        type: integer
+                        title: vip 过期时间
+                    required:
+                      - id
+                      - name
+                      - phone
+                      - free_points
+                      - recharge_points
+                      - subscription_points
+                      - status
+                      - uuid
+                      - vip
+                      - vip_expired_time
+                    x-apifox-orders:
+                      - id
+                      - name
+                      - phone
+                      - free_points
+                      - recharge_points
+                      - subscription_points
+                      - status
+                      - uuid
+                      - vip
+                      - vip_expired_time
+                  code:
+                    type: integer
+                required:
+                  - message
+                  - data
+                  - code
+                x-apifox-orders:
+                  - message
+                  - data
+                  - code
+              example:
+                message: 操作成功！
+                data:
+                  id: 14
+                  name: C3hkN7by
+                  phone: '15111222771'
+                  free_points: 0
+                  recharge_points: 140
+                  subscription_points: 0
+                  status: 0
+                  uuid: cc71db73-9a78-4a9a-85c5-085075f287a3
+                  vip: 0
+                  vip_expired_time: 0
+                code: 200000
+          headers: {}
+          x-apifox-name: 成功
+      security:
+        - bearer: []
+      x-apifox-folder: 我的
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-342175209-run
+components:
+  schemas: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers:
+  - url: ''
+    description: 云端 Mock
+security: []
+
+```

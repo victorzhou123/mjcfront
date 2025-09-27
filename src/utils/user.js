@@ -1,18 +1,12 @@
 import { baseComponent } from './base.js';
-import { BASE_URL } from './config.js';
+import { BASE_URL, MOCK_URL, USER_TOKEN, USER_REFRESH_TOKEN, USER_ACCESS_EXPIRES_AT, USER_REFRESH_EXPIRES_AT, USER_ID , USER_UUID, USER_VIP, USER_VIP_EXPIRED_TIME, USER_TRANSACTION_ID} from './config.js';
 
 class User {
     constructor() {
         this.isInit = false
         this.channel = null
-        this.uuid = ""
-        this.transactionId = ""
-        this.token = ""
-        this.refreshToken = ""
-        this.accessExpiresAt = 0
-        this.refreshExpiresAt = 0
-        this.userInfo = null
         this.apiBaseUrl = BASE_URL; // 请根据实际API地址修改
+        this.mockUrl = MOCK_URL
     }
 
     async init() {
@@ -21,9 +15,6 @@ class User {
         }
 
         console.log('user init begin...')
-
-        // 先尝试从本地存储加载用户信息
-        const hasLocalUserInfo = this.loadUserInfo()
         
         if (!baseComponent.isInit) {
             await baseComponent.init()
@@ -34,15 +25,7 @@ class User {
 
         this.isInit = true
 
-        // 智能处理token状态
-        if (!hasLocalUserInfo) {
-            console.log('没有本地用户信息，需要重新登录')
-            try {
-                await this.login()
-            } catch (error) {
-                console.error('登录失败:', error)
-            }
-        }
+        await this.login()
     }
 
     getUUID() {
@@ -63,6 +46,17 @@ class User {
         return s.replace(/([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{12})/, '$1-$2-$3-$4-$5')
     }
 
+    async userHeader() {
+        return {
+            'Content-Type': 'application/json',
+            'CLIENT-UDID': uni.getStorageSync(USER_UUID),
+            'CLIENT-PLATFORM': uni.getSystemInfoSync().platform || 'unknown',
+            'CLIENT-VERSION': '1.0.0', // 可以从manifest.json或其他地方获取
+            'ACCEPT-LANGUAGE': 'zh-CN',
+            'Authorization': `Bearer ${uni.getStorageSync(USER_TOKEN)}` // 刷新token接口需要Bearer认证
+        }
+    }
+
     // 登录，请求后端
     async login() {
         if (!this.isInit) {
@@ -70,33 +64,27 @@ class User {
             return
         }
 
-        if (!this.uuid) {
+        if (!uni.getStorageSync(USER_UUID)) {
             throw new Error('缺少必要的登录参数: uuid')
         }
 
         try {
             console.log('开始执行登录请求')
-            
-            const deviceInfo = uni.getDeviceInfo()
-            const systemInfo = uni.getSystemInfoSync()
+
+            const uuid = uni.getStorageSync(USER_UUID)
+            const transactionId = uni.getStorageSync(USER_TRANSACTION_ID)
             
             // 构建请求头
-            const headers = {
-                'Content-Type': 'application/json',
-                'CLIENT-UDID': this.uuid,
-                'CLIENT-PLATFORM': systemInfo.platform || 'unknown',
-                'CLIENT-VERSION': '1.0.0', // 可以从manifest.json或其他地方获取
-                'ACCEPT-LANGUAGE': 'zh-CN'
-            }
+            const headers = await this.userHeader()
             
             // 构建请求体
             const requestBody = {
-                udid: this.uuid
+                udid: uuid,
             }
             
             // 如果transactionId存在，则添加到请求体中
-            if (this.transactionId) {
-                requestBody.origin_transaction_id = this.transactionId
+            if (transactionId) {
+                requestBody.origin_transaction_id = transactionId
             }
             
             console.log('登录请求参数:', { headers, requestBody })
@@ -112,14 +100,10 @@ class User {
             
             // 处理登录响应
             if (response.code === 200000 && response.data) {
-                this.token = response.data.token
-                this.refreshToken = response.data.refresh_token
-                this.accessExpiresAt = response.data.access_expires_at
-                this.refreshExpiresAt = response.data.refresh_expires_at
-                this.userInfo = response.data.user
-                
-                // 保存用户信息到本地存储
-                this.saveUserInfo()
+                // 保存登录用户信息
+                this.saveLoginUserInfo(response.data)
+
+                await this.getUserInfo()
                 
                 console.log('登录成功，用户信息:', this.userInfo)
                 return response.data
@@ -131,6 +115,14 @@ class User {
             console.error('登录请求失败:', error)
             throw error
         }
+    }
+
+    saveLoginUserInfo(userInfo) {
+        console.log('saveLoginUserInfo:', userInfo)
+        uni.setStorageSync(USER_TOKEN, userInfo.token)
+        uni.setStorageSync(USER_REFRESH_TOKEN, userInfo.refresh_token)
+        uni.setStorageSync(USER_ACCESS_EXPIRES_AT, userInfo.access_expires_at)
+        uni.setStorageSync(USER_REFRESH_EXPIRES_AT, userInfo.refresh_expires_at)
     }
 
     // 发送HTTP请求的通用方法
@@ -159,48 +151,32 @@ class User {
             uni.request(requestOptions)
         })
     }
-    
-    // 保存用户信息到本地存储
-    saveUserInfo() {
-        try {
-            const userInfoData = {
-                token: this.token,
-                refreshToken: this.refreshToken,
-                accessExpiresAt: this.accessExpiresAt,
-                refreshExpiresAt: this.refreshExpiresAt,
-                userInfo: this.userInfo,
-                uuid: this.uuid,
-                transactionId: this.transactionId
+
+    // 发送HTTP请求的通用方法
+    async makeRequestMock(url, options = {}) {
+        return new Promise((resolve, reject) => {
+            const requestOptions = {
+                url: this.mockUrl + url,
+                method: options.method || 'GET',
+                header: options.headers || {},
+                data: options.data || {},
+                timeout: 30000,
+                success: (res) => {
+                    console.log('HTTP请求成功:', res)
+                    if (res.statusCode === 200) {
+                        resolve(res.data)
+                    } else {
+                        reject(new Error(`HTTP请求失败: ${res.statusCode}`))
+                    }
+                },
+                fail: (error) => {
+                    console.error('HTTP请求失败:', error)
+                    reject(error)
+                }
             }
             
-            uni.setStorageSync('userInfo', JSON.stringify(userInfoData))
-            console.log('用户信息已保存到本地存储')
-        } catch (error) {
-            console.error('保存用户信息失败:', error)
-        }
-    }
-    
-    // 从本地存储加载用户信息
-    loadUserInfo() {
-        try {
-            const userInfoStr = uni.getStorageSync('userInfo')
-            if (userInfoStr) {
-                const userInfoData = JSON.parse(userInfoStr)
-                this.token = userInfoData.token || ''
-                this.refreshToken = userInfoData.refreshToken || ''
-                this.accessExpiresAt = userInfoData.accessExpiresAt || 0
-                this.refreshExpiresAt = userInfoData.refreshExpiresAt || 0
-                this.userInfo = userInfoData.userInfo || null
-                this.uuid = userInfoData.uuid || ''
-                this.transactionId = userInfoData.transactionId || ''
-                
-                console.log('已从本地存储加载用户信息:', this.userInfo)
-                return true
-            }
-        } catch (error) {
-            console.error('加载用户信息失败:', error)
-        }
-        return false
+            uni.request(requestOptions)
+        })
     }
     
     // 清除用户信息
@@ -281,30 +257,55 @@ class User {
     }
     
     // 获取用户状态（VIP等级），请求后端
-    getUserStatus() {
-        if (!this.isInit) {
-            console.warn('User未初始化，请先调用init()方法')
-            return
+    async getUserInfo() {
+        const header = await this.userHeader()
+
+        // 如果userInfo为空，则请求获取用户信息
+        if (!uni.getStorageSync(USER_VIP)) {
+            try {
+                console.log('用户信息为空，正在请求获取用户状态...')
+                
+                const response = await this.makeRequestMock(`/v1/user`, {
+                    method: 'GET',
+                    header: header,
+                })
+
+                console.log('获取用户信息响应:', response)
+                
+                if (response.data) {
+                    this.saveUserInfo(response.data) // 保存到本地存储
+                } else {
+                    console.error('获取用户状态失败:', response.data?.message || '未知错误')
+                }
+            } catch (error) {
+                console.error('请求用户状态失败:', error)
+            }
         }
-        
-        return this.userInfo
+    }
+
+    saveUserInfo(userinfo) {
+        uni.setStorageSync(USER_ID, userinfo.id)
+        uni.setStorageSync(USER_UUID, userinfo.uuid)
+        uni.setStorageSync(USER_VIP, userinfo.vip)
+        uni.setStorageSync(USER_VIP_EXPIRED_TIME, userinfo.vip_expired_time)
     }
     
     // 获取用户VIP信息
-    getVipInfo() {
-        if (!this.userInfo) {
-            return { vip: 0, vipExpiredTime: 0 }
+    async getVipInfo() {
+        if (!uni.getStorageSync(USER_VIP)) {
+            await this.getUserInfo()
         }
         
         return {
-            vip: this.userInfo.vip || 0,
-            vipExpiredTime: this.userInfo.vip_expired_time || 0
+            vip: uni.getStorageSync(USER_VIP) || 0,
+            vipExpiredTime: uni.getStorageSync(USER_VIP_EXPIRED_TIME) || 0
         }
     }
     
     // 检查是否为VIP用户
-    isVip() {
-        const vipInfo = this.getVipInfo()
+    async isVip() {
+        const vipInfo = await this.getVipInfo()
+        
         return vipInfo.vip > 0 && vipInfo.vipExpiredTime > Date.now()
     }
 }
