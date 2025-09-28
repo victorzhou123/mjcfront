@@ -29,8 +29,12 @@
             <view class="frame8">
               <text class="ai-timestamp">{{ message.timestamp }}</text>
               <view class="rectangle1">
+                <!-- 如果有content内容，显示文字信息 -->
+                <view v-if="message.content" class="error-container">
+                  <text class="error-text">{{ message.content }}</text>
+                </view>
                 <!-- 单张图片显示 -->
-                <image v-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.imageUrl)" />
+                <image v-else-if="message.imageUrl" :src="message.imageUrl" class="ai-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.imageUrl)" />
                 <!-- 4张图片网格显示 -->
                 <view v-else-if="message.images && message.images.length === 4" class="images-grid">
                   <view class="grid-row">
@@ -125,25 +129,45 @@ const handleGenerate = async (inputText) => {
   await nextTick()
   await scrollToBottom()
   
-  // 创建AI回复占位，时间戳比用户消息晚1秒
-  const aiReply = {
-    timestamp: formatTimestamp(1),
-    imageUrl: null,
-    images: null
-  }
-  aiReplies.value.push(aiReply)
-  
-  // 再次滚动到底部显示AI占位消息
-  await nextTick()
-  await scrollToBottom()
-  
   // 保存输入文本用于API调用
   const prompt = inputText
   isGenerating.value = true
   
   try {
-    // 调用真实的API
-    const taskId = await painter.paint(prompt)
+    // 先调用paint接口
+    const paintResult = await painter.paint(prompt)
+    console.log('绘画请求结果:', paintResult)
+    
+    // 创建AI回复，时间戳为现在时间
+    const aiReply = {
+      timestamp: formatTimestamp(),
+      imageUrl: null,
+      images: null,
+      content: null
+    }
+    
+    if (!paintResult.success) {
+      // 如果请求失败，创建包含错误信息的AI回复
+      aiReply.content = `${paintResult.msg}`
+      aiReply.timestamp = formatTimestamp()
+      aiReplies.value.push(aiReply)
+      
+      // 滚动到底部显示错误信息
+      await nextTick()
+      await scrollToBottom()
+      
+      isGenerating.value = false
+      return
+    }
+    
+    // 请求成功，添加AI回复占位
+    aiReplies.value.push(aiReply)
+    
+    // 滚动到底部显示AI占位消息
+    await nextTick()
+    await scrollToBottom()
+    
+    const taskId = paintResult.data.task_id
     console.log('任务ID:', taskId)
     
     // 轮询任务状态直到完成
@@ -201,8 +225,28 @@ const handleGenerate = async (inputText) => {
   } catch (error) {
     console.error('生成图片失败:', error)
     
-    // 移除失败的AI回复
-    aiReplies.value.pop()
+    // 检查是否已经有AI回复（说明paint接口调用成功，但后续处理失败）
+    if (aiReplies.value.length > 0) {
+      const lastReply = aiReplies.value[aiReplies.value.length - 1]
+      // 如果最后一个回复没有content（说明是成功创建的占位回复），则更新为错误信息
+      if (!lastReply.content) {
+        lastReply.content = `抱歉，图片生成过程中出现错误：${error.message || '请重试'}`
+        lastReply.timestamp = formatTimestamp()
+      }
+    } else {
+      // 如果没有AI回复（说明paint接口调用就失败了），创建一个错误回复
+      const errorReply = {
+        timestamp: formatTimestamp(),
+        imageUrl: null,
+        images: null,
+        content: `抱歉，图片生成失败：${error.message || '请重试'}`
+      }
+      aiReplies.value.push(errorReply)
+      
+      // 滚动到底部显示错误信息
+      await nextTick()
+      await scrollToBottom()
+    }
     
     uni.showToast({
       title: error.message || '生成失败，请重试',
@@ -293,6 +337,7 @@ const allMessages = computed(() => {
           type: 'ai',
           imageUrl: reply.imageUrl,
           images: reply.images,
+          content: reply.content,
           timestamp: reply.timestamp,
           timestampValue: new Date(reply.timestamp).getTime()
         })
@@ -662,6 +707,24 @@ const clearChatHistory = () => {
   justify-content: flex-end;
   padding: 20px 4vw 10px 2vw;
   width: 100%;
+}
+
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 14px;
+  text-align: center;
+  line-height: 20px;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 

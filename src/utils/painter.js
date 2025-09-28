@@ -3,7 +3,7 @@ import { BASE_URL, USER_TOKEN } from './config.js';
 
 class Painter {
     constructor() {
-        this.baseUrl = BASE_URL
+        this.baseUrl = BASE_URL + "/v1"
     }
 
     paint(prompt) {
@@ -21,14 +21,32 @@ class Painter {
                 },
                 success: (res) => {
                     if (res.data.code === 200000) {
-                        resolve(res.data.data.task_id);
+                        // 返回统一格式的成功响应
+                        resolve({
+                            success: true,
+                            msg: '图片生成任务创建成功',
+                            data: {
+                                task_id: res.data.data.task_id
+                            }
+                        });
                     } else {
                         console.error('图片生成请求失败:', res.data.msg, '错误码:', res.data.code);
-                        reject(new Error(res.data.msg));
+                        // 返回统一格式的失败响应
+                        resolve({
+                            success: false,
+                            msg: res.data.msg || '图片生成请求失败',
+                            data: null
+                        });
                     }
                 },
                 fail: (error) => {
-                    reject(error);
+                    console.error('网络请求失败:', error);
+                    // 返回统一格式的网络错误响应
+                    resolve({
+                        success: false,
+                        msg: '请求失败，未知错误',
+                        data: null
+                    });
                 }
             })
         })
