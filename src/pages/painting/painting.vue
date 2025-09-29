@@ -522,10 +522,10 @@ const clearChatHistory = () => {
 .input-area {
   position: fixed;
   bottom: 12%;
-  height: 10%;
   left: 0;
   right: 0;
   z-index: 100;
+  /* 移除固定高度，让InputArea组件自己控制高度和向上扩展 */
 }
 
 .ellipse1 {
