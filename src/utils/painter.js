@@ -3,7 +3,7 @@ import { BASE_URL, USER_TOKEN } from './config.js';
 
 class Painter {
     constructor() {
-        this.baseUrl = BASE_URL + "/v1"
+        this.baseUrl = BASE_URL
     }
 
     paint(prompt) {

@@ -125,10 +125,6 @@ const handleGenerate = async (inputText) => {
   // 保存用户消息到本地存储
   saveChatHistory()
   
-  // 等待DOM更新后滚动
-  await nextTick()
-  await scrollToBottom()
-  
   // 保存输入文本用于API调用
   const prompt = inputText
   isGenerating.value = true
@@ -152,20 +148,12 @@ const handleGenerate = async (inputText) => {
       aiReply.timestamp = formatTimestamp()
       aiReplies.value.push(aiReply)
       
-      // 滚动到底部显示错误信息
-      await nextTick()
-      await scrollToBottom()
-      
       isGenerating.value = false
       return
     }
     
     // 请求成功，添加AI回复占位
     aiReplies.value.push(aiReply)
-    
-    // 滚动到底部显示AI占位消息
-    await nextTick()
-    await scrollToBottom()
     
     const taskId = paintResult.data.task_id
     console.log('任务ID:', taskId)
@@ -242,12 +230,7 @@ const handleGenerate = async (inputText) => {
         content: `抱歉，图片生成失败：${error.message || '请重试'}`
       }
       aiReplies.value.push(errorReply)
-      
-      // 滚动到底部显示错误信息
-      await nextTick()
-      await scrollToBottom()
     }
-    
     uni.showToast({
       title: error.message || '生成失败，请重试',
       icon: 'none'
@@ -306,10 +289,6 @@ const previewImage = (imageUrl, allImages = [], clickedIndex = null) => {
     }
   })
 }
-
-
-
-
 
 // 合并并排序所有消息
 const allMessages = computed(() => {
