@@ -229,7 +229,7 @@ defineExpose({
 /* 响应式媒体查询 */
 @media screen and (max-width: 480px) {
   .frame20 {
-    padding: 8px 12px;
+    padding: 0 10px 15px 10px;
     min-height: 62px; /* 调整为适应新的高度计算 */
     max-height: 146px;
   }
@@ -250,7 +250,7 @@ defineExpose({
 
 @media screen and (min-width: 768px) {
   .frame20 {
-    padding: 12px 16px;
+    padding: 0 10px 15px 10px;
     min-height: 70px;
     max-height: 158px;
   }
