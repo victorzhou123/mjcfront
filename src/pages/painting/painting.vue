@@ -63,8 +63,6 @@
     
     <!-- 底部导航栏 -->
     <BottomNavigation current-page="painting" />
-    
-
   </view>
 </template>
 
@@ -492,11 +490,10 @@ const clearChatHistory = () => {
   white-space: nowrap;
 }
 
-/* absolute-height: 75% */
 .auto-wrapper {
   position: absolute;
-  bottom: 22%;
-  height: 65%;
+  bottom: 17%;
+  height: 70%;
   left: 0;
   right: 0;
   width: 100%;
@@ -512,10 +509,11 @@ const clearChatHistory = () => {
   overflow-y: auto;
 }
 
-/* absolute-height: 10% */
+/* absolute-height: 7% */
 .input-area {
   position: fixed;
   bottom: 12%;
+  height: 5%;
   left: 0;
   right: 0;
   z-index: 100;

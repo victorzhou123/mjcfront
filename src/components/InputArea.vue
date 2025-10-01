@@ -120,7 +120,7 @@ defineExpose({
   display: flex;
   align-items: flex-end; /* 改为底部对齐，让内容固定在底部 */
   justify-content: center;
-  padding: 12px 16px;
+  padding: 0 12px 12px 16px;
   width: 100%;
   min-height: 70px; /* 1行 + 外层padding: 46px + 24px = 70px */
   max-height: 158px; /* 5行 + 外层padding: 134px + 24px = 158px */
@@ -235,7 +235,7 @@ defineExpose({
   }
   
   .frame21 {
-    padding: 10px 14px;
+    /* padding: 10px 14px; */
     min-width: 0;
     min-height: 42px; /* 调整为适应新的高度计算 */
     max-height: 124px;
