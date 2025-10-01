@@ -16,16 +16,10 @@
                 <text class="text2">{{ message.content }}</text>
               </view>
             </view>
-            <view class="frame9">
-              <image src="/static/user_avatar.png" class="ellipse1" mode="aspectFill" />
-            </view>
           </view>
           
           <!-- AI回复消息 -->
           <view v-else-if="message.type === 'ai'" class="frame92" :id="'message-' + index">
-            <view class="frame7">
-              <image src="/static/mj_avatar.png" class="ellipse1" mode="aspectFill" />
-            </view>
             <view class="frame8">
               <text class="ai-timestamp">{{ message.timestamp }}</text>
               <view class="rectangle1">
@@ -631,7 +625,7 @@ const clearChatHistory = () => {
   flex-shrink: 0;
   background: #d9d9d9;
   width: fit-content;
-  max-width: calc(100vw - 100px);
+  max-width: calc(100vw - 60px);
   min-width: 200px;
   min-height: 60px;
   display: flex;
@@ -675,8 +669,8 @@ const clearChatHistory = () => {
 }
 
 .grid-image {
-  width: 135px;
-  height: 135px;
+  width: 155px;
+  height: 155px;
   object-fit: cover;
 }
 
