@@ -61,7 +61,7 @@ const navigateToSpace = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.5);
+  background: #f4f0eb;
   height: 12%;
   width: 100%;
   position: fixed;

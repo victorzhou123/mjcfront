@@ -92,7 +92,7 @@ const handleInputBlur = () => {
 
 // 处理输入变化，确保不超过最大长度
 const handleInput = (event) => {
-  const value = event.detail.value || event.target.value
+  const value = event.detail.value || event.target.value || ''
   
   // 如果输入超过最大长度，截断到最大长度
   if (value.length > 500) {

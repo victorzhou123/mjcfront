@@ -78,7 +78,7 @@ const handleClearClick = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.5);
+  background: #f4f0eb;
   /* padding: 10px 15px; */
   width: 100%;
   height: 13%;

@@ -607,6 +607,7 @@ const clearChatHistory = () => {
   flex-shrink: 0;
   align-items: flex-start;
   margin-left: 8px;
+  margin-bottom: 8px;
 }
 
 .ai-timestamp {
