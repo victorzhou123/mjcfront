@@ -39,7 +39,8 @@ import BackButton from '@/components/BackButton.vue'
 // 跳转到订阅会员页面
 const goToSubscription = () => {
   uni.navigateTo({
-    url: '/pages/subscribe/subscribe'
+    url: '/pages/subscribe/subscribe',
+    animationType: 'slide-in-right',
   })
 }
 

@@ -63,7 +63,8 @@ onMounted(async () => {
 // 设置按钮点击事件
 const handleSettingsClick = () => {
   uni.navigateTo({
-    url: '/pages/setting/setting'
+    url: '/pages/setting/setting',
+    animationType: 'slide-in-right',
   })
 }
 

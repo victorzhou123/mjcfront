@@ -29,7 +29,8 @@ const props = defineProps({
 const navigateToAI = () => {
   if (props.currentPage !== 'painting') {
     uni.navigateTo({
-      url: '/pages/painting/painting'
+      url: '/pages/painting/painting',
+      animationType: 'fade-in',
     }).catch(err => {
       console.error('导航失败:', err)
       uni.showToast({
@@ -43,7 +44,8 @@ const navigateToAI = () => {
 const navigateToSpace = () => {
   if (props.currentPage !== 'space') {
     uni.navigateTo({
-      url: '/pages/space/space'
+      url: '/pages/space/space',
+      animationType: 'fade-in',
     }).catch(err => {
       console.error('导航失败:', err)
       uni.showToast({
