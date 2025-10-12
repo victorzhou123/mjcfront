@@ -32,12 +32,12 @@
                 <!-- 4张图片网格显示 -->
                 <view v-else-if="message.images && message.images.length === 4" class="images-grid">
                   <view class="grid-row">
-                    <image :src="message.images[0]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[0], message.images, 0)" />
-                    <image :src="message.images[1]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[1], message.images, 1)" />
+                    <image :src="message.images[0]" class="grid-image" mode="widthFix" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[0], message.images, 0)" />
+                    <image :src="message.images[1]" class="grid-image" mode="widthFix" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[1], message.images, 1)" />
                   </view>
                   <view class="grid-row">
-                    <image :src="message.images[2]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[2], message.images, 2)" />
-                    <image :src="message.images[3]" class="grid-image" mode="aspectFit" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[3], message.images, 3)" />
+                    <image :src="message.images[2]" class="grid-image" mode="widthFix" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[2], message.images, 2)" />
+                    <image :src="message.images[3]" class="grid-image" mode="widthFix" @error="handleImageError" @load="handleImageLoad" @tap="() => previewImage(message.images[3], message.images, 3)" />
                   </view>
                 </view>
                 <!-- 加载中状态 -->
@@ -668,9 +668,7 @@ const clearChatHistory = () => {
 }
 
 .grid-image {
-  width: 155px;
-  height: 155px;
-  object-fit: cover;
+  max-width: 150px;
 }
 
 .frame93 {
