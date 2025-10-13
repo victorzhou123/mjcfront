@@ -100,38 +100,29 @@ const formatTimestamp = (addSeconds = 0) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-// 处理生成按钮点击
+// 处理生成按钮点击, 生成时将taskid保存到本地存储，后续会有线程循环访问进行任务拉取
 const handleGenerate = async (inputText) => {
   if (!inputText.trim() || isGenerating.value) {
     return
   }
   
-  const userMessage = {
-    content: inputText,
-    timestamp: formatTimestamp()
-  }
-  
-  // 添加用户消息
-  userMessages.value.push(userMessage)
-  
-  // 保存用户消息到本地存储
-  saveChatHistory()
-  
-  // 保存输入文本用于API调用
-  const prompt = inputText
   isGenerating.value = true
-  
+
+  // 保存用户消息
+  saveUserMessageContent(inputText)
+    
   try {
     // 先调用paint接口
-    const paintResult = await painter.paint(prompt)
-    console.log('绘画请求结果:', paintResult)
+    const paintResult = await painter.paint(inputText)
     
     // 创建AI回复，时间戳为现在时间
     const aiReply = {
       timestamp: formatTimestamp(),
       imageUrl: null,
       images: null,
-      content: null
+      content: null,
+      taskId: null,
+      prompt: inputText,
     }
     
     if (!paintResult.success) {
@@ -142,66 +133,31 @@ const handleGenerate = async (inputText) => {
       
       isGenerating.value = false
       return
+    } else {
+      // 在AI回复中添加任务ID
+      aiReply.taskId = paintResult.data.task_id
     }
     
     // 请求成功，添加AI回复占位
     aiReplies.value.push(aiReply)
+
+    // 保存AI回复到本地存储
+    saveChatHistory()
     
     const taskId = paintResult.data.task_id
     console.log('任务ID:', taskId)
     
-    // 轮询任务状态直到完成
-    let result
-    while (true) {
-      result = await painter.pollTaskStatus(taskId)
-      console.log('任务状态:', result.status)
-      
-      if (result.status === 2) {
-        // 任务完成
-        break
-      }
-      
-      // 等待1秒后继续请求
-      await new Promise(resolve => setTimeout(resolve, 1000))
+    // 轮询任务状态直到完成或失败
+    const result = await painter.cycleTaskPull(taskId)
+    if (!result) {
+      throw new Error('任务拉取失败')
     }
     
     // 更新AI回复的图片URL
-    const lastReply = aiReplies.value[aiReplies.value.length - 1]
-    if (result.images && result.images.length > 0) {
-      if (result.images.length === 4) {
-        // 如果有4张图片，按顺序拼接显示
-        lastReply.images = result.images
-        lastReply.imageUrl = null // 清空单张图片URL
-        console.log('生成的4张图片URLs:', result.images)
-        console.log('aiReplies:', aiReplies)
-      } else {
-        // 如果不是4张图片，使用第一张
-        lastReply.imageUrl = result.images[0]
-        lastReply.images = null // 清空多张图片数组
-        console.log('生成的图片URL:', lastReply.imageUrl)
-      }
-    } else {
-      throw new Error('未获取到生成的图片')
-    }
-    
-    // 图片加载完成后滚动到底部
-    await nextTick()
-    setTimeout(async () => {
-      await scrollToBottom()
-    }, 200) // 等待图片渲染
+    await updateLastAiReplyImages(result, inputText)
     
     // 保存AI回复到本地存储
     saveChatHistory()
-    
-    // 保存图片到本地存储
-    await saveImagesToLocal(result.images, inputText)
-    
-    // AI回复完成后聚焦输入框
-    await nextTick()
-    if (inputAreaRef.value && inputAreaRef.value.focusInput) {
-      inputAreaRef.value.focusInput()
-    }
-    
   } catch (error) {
     console.error('生成图片失败:', error)
     
@@ -229,6 +185,83 @@ const handleGenerate = async (inputText) => {
     })
   } finally {
     isGenerating.value = false
+  }
+}
+
+// 保存user message
+const saveUserMessageContent = (inputText) => {
+  const userMessage = {
+    content: inputText,
+    timestamp: formatTimestamp()
+  }
+  
+  // 添加用户消息
+  userMessages.value.push(userMessage)
+  
+  // 保存用户消息到本地存储
+  saveChatHistory()
+}
+
+// 更新aiReplies中最后一个回复中的照片URL
+const updateLastAiReplyImages = async (result, inputText) => {
+    const lastReply = aiReplies.value[aiReplies.value.length - 1]
+    if (result.images && result.images.length > 0) {
+      // 清空taskId
+      lastReply.taskId = null
+
+      // 填入图片URL
+      if (result.images.length === 4) {
+        // 如果有4张图片，按顺序拼接显示
+        lastReply.images = result.images
+        lastReply.imageUrl = null // 清空单张图片URL
+        console.log('生成的4张图片URLs:', result.images)
+        console.log('aiReplies:', aiReplies)
+      } else {
+        // 如果不是4张图片，使用第一张
+        lastReply.imageUrl = result.images[0]
+        lastReply.images = null // 清空多张图片数组
+        console.log('生成的图片URL:', lastReply.imageUrl)
+      }
+
+      // 保存图片到本地存储
+      await saveImagesToLocal(result.images, inputText)
+    } else {
+      throw new Error('未获取到生成的图片')
+    }
+}
+
+// 进入页面时检查是否有正在运行的task
+async function checkProcessingTask() {
+  console.log('checkProcessingTask called')
+  // 如果aiReplies为空，直接返回
+  if (aiReplies.value.length === 0) {
+    return
+  }
+  
+  try {
+    // 检查aiReplies中最后一个元素的taskId是否为空
+    const lastReply = aiReplies.value[aiReplies.value.length - 1]
+    if (!lastReply.taskId) {
+      return
+    }
+
+    console.log('lastReply:', lastReply)
+
+    // 拉取taskID对应的任务结果
+    const result = await painter.cycleTaskPull(lastReply.taskId)
+    if (result) {
+      // 更新最新的AI回复的图片URL
+      await updateLastAiReplyImages(result, lastReply.prompt)
+      
+      // 保存AI回复到本地存储
+      saveChatHistory()
+    }
+  } catch (error) {
+    console.error('Failed to check processing task:', error)
+    uni.showToast({
+      title: '检查任务状态失败',
+      icon: 'none'
+    })
   }
 }
 
@@ -341,6 +374,9 @@ const handleImageError = (e) => {
 onMounted(() => {
   // 加载历史对话记录
   loadChatHistory()
+  
+  // 检查是否有正在运行的task
+  checkProcessingTask()
 })
 
 // 加载历史对话记录
@@ -355,13 +391,6 @@ const loadChatHistory = () => {
       console.log('已加载历史对话记录:', {
         userMessages: chatData.userMessages.length,
         aiReplies: chatData.aiReplies.length
-      })
-      
-      // 加载完成后滚动到底部
-      nextTick(() => {
-        setTimeout(() => {
-          scrollToBottom()
-        }, 100)
       })
     }
   } catch (error) {

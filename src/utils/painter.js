@@ -1,6 +1,5 @@
 import { BASE_URL, USER_TOKEN } from './config.js';
 
-
 class Painter {
     constructor() {
         this.baseUrl = BASE_URL
@@ -94,6 +93,35 @@ class Painter {
                 }
             })
         })
+    }
+
+    // 循环拉取任务状态，直到任务完成或失败
+    async cycleTaskPull(taskId) {
+        try {
+            if (!taskId) {
+                return
+            }
+            // 轮询任务状态: while循环，直到任务完成或失败
+            while (true) {
+                console.log('轮询任务状态:', taskId)
+                try {
+                    const res = await this.pollTaskStatus(taskId)
+                    if (res.status === 2) {
+                        // 任务完成，处理结果
+                        return res
+                    }
+                } catch (error) {
+                    console.error('任务状态查询失败:', error);
+                    return
+                }
+
+                // 等待1秒后继续请求
+                await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+        } catch (error) {
+            console.error('Task polling failed:', error);
+            throw error;
+        }
     }
 }
 
