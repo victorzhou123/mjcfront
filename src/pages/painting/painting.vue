@@ -591,6 +591,7 @@ const clearChatHistory = () => {
   max-width: calc(100vw - 120px);
   min-height: 40px;
   padding: 10px;
+  margin-bottom: 15px;
 }
 
 .text2 {
