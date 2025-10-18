@@ -77,13 +77,16 @@ class ImageStorage {
         this.fallbackSaveFile(downloadResult.tempFilePath, resolve, reject)
       })
 
+      // 确定保存时间，优先使用传入的saveTime，否则使用当前时间
+      const saveTime = metadata.saveTime || new Date().toISOString()
+
       // 保存图片元数据
       const imageMetadata = {
         id: timestamp,
         fileName,
         localPath: savedPath.savedFilePath,
         originalUrl: imageUrl,
-        saveTime: new Date().toISOString(),
+        saveTime: saveTime,
         ...metadata
       }
 
@@ -148,7 +151,20 @@ class ImageStorage {
   async saveImageMetadata(metadata) {
     try {
       const existingMetadata = this.getImageMetadata()
-      existingMetadata.unshift(metadata) // 新图片添加到开头
+      
+      // 以originalUrl为key存储元数据
+      existingMetadata[metadata.originalUrl] = {
+        id: metadata.id,
+        fileName: metadata.fileName,
+        localPath: metadata.localPath,
+        originalUrl: metadata.originalUrl,
+        saveTime: metadata.saveTime,
+        prompt: metadata.prompt,
+        generatedAt: metadata.generatedAt,
+        imageCount: metadata.imageCount,
+        index: metadata.index,
+        totalCount: metadata.totalCount
+      }
       
       uni.setStorageSync(this.metadataKey, existingMetadata)
       console.log('图片元数据保存成功:', metadata)
@@ -160,28 +176,55 @@ class ImageStorage {
 
   /**
    * 获取所有图片元数据
-   * @returns {Array} 图片元数据数组
+   * @returns {Object} 图片元数据对象，以originalUrl为key
    */
   getImageMetadata() {
     try {
-      return uni.getStorageSync(this.metadataKey) || []
+      return uni.getStorageSync(this.metadataKey) || {}
     } catch (error) {
       console.error('获取图片元数据失败:', error)
-      return []
+      return {}
     }
   }
 
   /**
    * 根据ID获取图片元数据
    * @param {number} id - 图片ID
-   * @returns {Object|null} 图片元数据
+   * @returns {Object|null} 图片元数据对象或null
    */
   getImageMetadataById(id) {
     try {
-      const metadata = this.getImageMetadata()
-      return metadata.find(item => item.id === id) || null
+      const allMetadata = this.getImageMetadata()
+      
+      // 遍历对象查找匹配的ID
+      for (const url in allMetadata) {
+        if (allMetadata[url].id === id) {
+          return allMetadata[url]
+        }
+      }
+      
+      return null
     } catch (error) {
-      console.error('获取图片元数据失败:', error)
+      console.error('根据ID获取图片元数据失败:', error)
+      return null
+    }
+  }
+
+  /**
+   * 根据原始URL判断图片是否已存在
+   * @param {string} originalUrl - 原始图片URL
+   * @returns {Object|null} 如果存在返回图片元数据，否则返回null
+   */
+  getImageMetadataByUrl(originalUrl) {
+    try {
+      if (!originalUrl || typeof originalUrl !== 'string') {
+        return null
+      }
+      
+      const metadata = this.getImageMetadata()
+      return metadata[originalUrl] || null
+    } catch (error) {
+      console.error('根据URL获取图片元数据失败:', error)
       return null
     }
   }
@@ -210,8 +253,8 @@ class ImageStorage {
 
       // 删除元数据
       const allMetadata = this.getImageMetadata()
-      const filteredMetadata = allMetadata.filter(item => item.id !== id)
-      uni.setStorageSync(this.metadataKey, filteredMetadata)
+      delete allMetadata[metadata.originalUrl]
+      uni.setStorageSync(this.metadataKey, allMetadata)
       
       console.log('图片删除成功:', id)
     } catch (error) {
@@ -226,9 +269,10 @@ class ImageStorage {
   async clearAllImages() {
     try {
       const metadata = this.getImageMetadata()
+      const metadataValues = Object.values(metadata)
       
       // 删除所有本地文件
-      for (const item of metadata) {
+      for (const item of metadataValues) {
         try {
           await uni.removeSavedFile({
             filePath: item.localPath
@@ -255,10 +299,23 @@ class ImageStorage {
   getStorageStats() {
     try {
       const metadata = this.getImageMetadata()
+      const metadataValues = Object.values(metadata)
+      
+      if (metadataValues.length === 0) {
+        return {
+          totalImages: 0,
+          oldestImage: null,
+          newestImage: null
+        }
+      }
+      
+      // 按保存时间排序
+      const sortedByTime = metadataValues.sort((a, b) => new Date(a.saveTime) - new Date(b.saveTime))
+      
       return {
-        totalImages: metadata.length,
-        oldestImage: metadata.length > 0 ? metadata[metadata.length - 1].saveTime : null,
-        newestImage: metadata.length > 0 ? metadata[0].saveTime : null
+        totalImages: metadataValues.length,
+        oldestImage: sortedByTime[0].saveTime,
+        newestImage: sortedByTime[sortedByTime.length - 1].saveTime
       }
     } catch (error) {
       console.error('获取存储统计失败:', error)

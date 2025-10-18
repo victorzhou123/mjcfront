@@ -96,7 +96,7 @@ class User {
             console.log('登录请求参数:', { headers, requestBody })
             
             // 发送登录请求
-            const response = await this.makeRequest('/v1/auth/login', {
+            const response = await this.makeRequest(`${this.apiBaseUrl}/v1/auth/login`, {
                 method: 'POST',
                 headers: headers,
                 data: requestBody
@@ -134,7 +134,7 @@ class User {
     async makeRequest(url, options = {}) {
         return new Promise((resolve, reject) => {
             const requestOptions = {
-                url: this.apiBaseUrl + url,
+                url: url,
                 method: options.method || 'GET',
                 header: options.headers || {},
                 data: options.data || {},
@@ -229,7 +229,7 @@ class User {
             console.log('刷新token请求参数:', { headers, requestBody })
             
             // 发送刷新token请求
-            const response = await this.makeRequest('/v1/auth/refresh-token', {
+            const response = await this.makeRequest(`${this.apiBaseUrl}/v1/auth/refresh-token`, {
                 method: 'POST',
                 headers: headers,
                 data: requestBody

@@ -1059,3 +1059,284 @@ servers:
 security: []
 
 ```
+
+# 我的作品
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  version: 1.0.0
+paths:
+  /user/works:
+    get:
+      summary: 我的作品
+      deprecated: false
+      description: ''
+      tags:
+        - 我的
+      parameters:
+        - name: CLIENT-UDID
+          in: header
+          description: 设备唯一标识符
+          example: '{{udid}}'
+          schema:
+            type: string
+            default: '{{udid}}'
+        - name: CLIENT-PLATFORM
+          in: header
+          description: 设备当前平台
+          example: '{{platform}}'
+          schema:
+            type: string
+            default: '{{platform}}'
+        - name: CLIENT-VERSION
+          in: header
+          description: 设备当前APP版本
+          example: '{{version}}'
+          schema:
+            type: string
+            default: '{{version}}'
+        - name: ACCEPT-LANGUAGE
+          in: header
+          description: 语言
+          example: zh-CN
+          schema:
+            type: string
+            default: zh-CN
+            enum:
+              - zh-CH
+              - pt
+            x-apifox-enum:
+              - value: zh-CH
+                name: 中文
+                description: ''
+              - value: pt
+                name: 葡萄牙语
+                description: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          title: 任务id
+                        status:
+                          type: integer
+                          title: 状态
+                          enum:
+                            - 0
+                            - 1
+                            - 2
+                            - -1
+                            - -2
+                          x-apifox-enum:
+                            - value: 0
+                              name: 任务开始
+                              description: ''
+                            - value: 1
+                              name: 任务进行
+                              description: ''
+                            - value: 2
+                              name: 任务成功
+                              description: ''
+                            - value: -1
+                              name: 任务失败
+                              description: ''
+                            - value: -2
+                              name: 任务超时
+                              description: ''
+                        type:
+                          type: integer
+                          title: 模型类型
+                          enum:
+                            - 1
+                            - 2
+                          x-apifox-enum:
+                            - value: 1
+                              name: luma
+                              description: ''
+                            - value: 2
+                              name: mj
+                              description: ''
+                          x-apifox-mock: '1'
+                        content:
+                          type: object
+                          properties:
+                            prompt:
+                              type: string
+                              title: 提示词
+                              x-apifox-mock: '{{$lorem.sentence}}'
+                          required:
+                            - prompt
+                          x-apifox-orders:
+                            - prompt
+                          title: 请求内容
+                          description: 请查看请求接口
+                        images:
+                          type: array
+                          items:
+                            type: string
+                            x-apifox-mock: >-
+                              https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                          title: 图片结果
+                          maxItems: 4
+                          minItems: 4
+                        created_at:
+                          type: string
+                          title: 创建时间
+                          x-apifox-mock: '{{$date.anytime|format(''yyyy-MM-dd HH:mm:ss'')}}'
+                        updated_at:
+                          type: string
+                          title: 更新时间
+                          x-apifox-mock: '{{$date.anytime|format(''yyyy-MM-dd HH:mm:ss'')}}'
+                      required:
+                        - id
+                        - status
+                        - type
+                        - images
+                        - content
+                        - created_at
+                        - updated_at
+                      x-apifox-orders:
+                        - id
+                        - status
+                        - type
+                        - images
+                        - content
+                        - created_at
+                        - updated_at
+                  message:
+                    type: string
+                  pager:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        title: 当前页
+                      per_page:
+                        type: integer
+                        title: 每页条数
+                      total_page:
+                        type: integer
+                        title: 总页数
+                      total_count:
+                        type: integer
+                        title: 总条数
+                      next_page_url:
+                        type: string
+                        title: 下一页的链接
+                      prev_page_url:
+                        type: string
+                        title: 上一页的链接
+                    required:
+                      - current_page
+                      - per_page
+                      - total_page
+                      - total_count
+                      - next_page_url
+                      - prev_page_url
+                    x-apifox-orders:
+                      - current_page
+                      - per_page
+                      - total_page
+                      - total_count
+                      - next_page_url
+                      - prev_page_url
+                required:
+                  - code
+                  - data
+                  - message
+                  - pager
+                x-apifox-orders:
+                  - code
+                  - data
+                  - message
+                  - pager
+              example:
+                code: 45
+                data:
+                  - id: 40
+                    status: 2
+                    type: 1
+                    images:
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                    content:
+                      prompt: 计段发议十表利年情进。
+                    created_at: '2025-06-21 19:48:57'
+                    updated_at: '2024-12-27 17:52:35'
+                  - id: 74
+                    status: 2
+                    type: 1
+                    images:
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                    content:
+                      prompt: 价断即完组总比。
+                    created_at: '2025-04-18 13:45:23'
+                    updated_at: '2025-07-15 17:26:17'
+                  - id: 83
+                    status: 2
+                    type: 1
+                    images:
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                      - >-
+                        https://testbucket0x.oss-cn-beijing.aliyuncs.com/gfast/dcmkryvlbhiyyybaec.png
+                    content:
+                      prompt: 西称格支育素持除总。
+                    created_at: '2026-06-24 03:25:43'
+                    updated_at: '2026-01-15 22:38:28'
+                message: est incididunt dolor non ea
+                pager:
+                  current_page: 8
+                  per_page: 60
+                  total_page: 89
+                  total_count: 42
+                  next_page_url: https://mushy-colon.biz/
+                  prev_page_url: https://warped-trash.info/
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 我的
+      x-apifox-status: testing
+      x-run-in-apifox: https://app.apifox.com/web/project/7020404/apis/api-359615782-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers:
+  - url: http://interstellar.a22t.com
+    description: 测试环境
+security: []
+
+```

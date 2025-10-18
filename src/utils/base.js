@@ -56,7 +56,7 @@ class BaseComponent {
 
     async getTransactionId() {
         console.log('开始获取transactionId');
-        const transactionId = uni.getStorageSync(USER_TRANSACTION_ID)
+        var transactionId = uni.getStorageSync(USER_TRANSACTION_ID)
 
         if (transactionId != "") {
             return transactionId;
