@@ -114,7 +114,10 @@ const handleGenerate = async (inputText) => {
   try {
     // 先调用paint接口
     const paintResult = await painter.paint(inputText)
-    
+    if (!paintResult.success) {
+      throw new Error(paintResult.msg || '图片生成请求失败')
+    }
+
     // 创建AI回复，时间戳为现在时间
     const aiReply = {
       timestamp: formatTimestamp(),
